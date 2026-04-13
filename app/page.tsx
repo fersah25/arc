@@ -6,6 +6,7 @@ import {
   useDeployContract,
   useWaitForTransactionReceipt,
   useSendTransaction,
+  useAccount,
 } from "wagmi";
 import { parseEther, stringToHex } from "viem";
 
@@ -123,7 +124,9 @@ function GmPanel() {
 }
 
 // ─── Task 4 Panel ────────────────────────────────────────────────────────────
-function DeployPanel() {
+function NameRegisterPanel() {
+  const [name, setName] = useState("");
+  const { isConnected } = useAccount();
   const {
     deployContract,
     data: txHash,
@@ -133,39 +136,63 @@ function DeployPanel() {
   const {
     isLoading: isConfirming,
     isSuccess,
-    data: receipt,
   } = useWaitForTransactionReceipt({ hash: txHash });
 
-  const contractAddress = receipt?.contractAddress;
-
-  const handleDeploy = () => {
+  const handleRegister = () => {
     deployContract({ abi: [], bytecode: HELLO_ARC_BYTECODE });
   };
 
+  const isDisabled = !isConnected || !name.trim() || isWaitingWallet || isConfirming;
+
   return (
-    <div className="pt-4 flex flex-col gap-3">
-      <p className="text-sm text-zinc-400">
-        Arc Testnet üzerine ilk akıllı kontratını dağıt, zincirde bir iz bırak.
-      </p>
-      {isSuccess && contractAddress && (
-        <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/30 px-4 py-3">
-          <p className="text-xs font-medium text-emerald-400 mb-1">
-            ✓ Kontrat başarıyla dağıtıldı!
+    <div className="pt-4 flex flex-col gap-4">
+      {/* Input alanı */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[11px] font-medium tracking-widest text-zinc-500 uppercase">
+          İstediğiniz İsim (.arc otomatik eklenir)
+        </label>
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+            placeholder="fersah"
+            maxLength={32}
+            className="w-full rounded-xl border border-indigo-900/40 bg-[#070710] px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-700 outline-none focus:border-indigo-600/50 focus:ring-1 focus:ring-indigo-600/20 transition-all"
+          />
+          {name && (
+            <span className="absolute right-4 text-xs text-zinc-500 pointer-events-none">
+              {name}.arc
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Başarı state */}
+      {isSuccess && txHash && (
+        <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 px-4 py-3 flex flex-col gap-1">
+          <p className="text-xs text-zinc-400">
+            İşlem Hash:{" "}
+            <a
+              href={`https://testnet.arcscan.app/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all transition-colors"
+            >
+              {txHash.slice(0, 10)}...{txHash.slice(-8)}
+            </a>
           </p>
-          <a
-            href={`https://testnet.arcscan.app/address/${contractAddress}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-emerald-500 hover:text-emerald-300 underline underline-offset-2 break-all transition-colors"
-          >
-            {contractAddress}
-          </a>
+          <p className="text-xs font-medium text-emerald-400">
+            ✓ İsminiz başarıyla kaydedildi!
+          </p>
         </div>
       )}
+
+      {/* Buton */}
       <button
-        onClick={isSuccess ? () => reset() : handleDeploy}
-        disabled={isWaitingWallet || isConfirming}
-        className="w-full rounded-lg border border-indigo-800/40 bg-indigo-950/60 px-4 py-2.5 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-900/50 hover:text-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={isSuccess ? () => { reset(); setName(""); } : handleRegister}
+        disabled={isDisabled}
+        className="w-full rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.15)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
       >
         {isWaitingWallet ? (
           <span className="flex items-center justify-center gap-2">
@@ -175,14 +202,22 @@ function DeployPanel() {
         ) : isConfirming ? (
           <span className="flex items-center justify-center gap-2">
             <span className="h-3.5 w-3.5 rounded-full border-2 border-indigo-700 border-t-indigo-300 animate-spin" />
-            Dağıtılıyor...
+            Kaydediliyor...
           </span>
         ) : isSuccess ? (
-          "Tekrar Dağıt"
+          "Tekrar Kaydet"
+        ) : !isConnected ? (
+          "Önce Cüzdanı Bağla"
         ) : (
-          "Kontratı Dağıt"
+          "İsmi Kaydet"
         )}
       </button>
+
+      {!isConnected && (
+        <p className="text-xs text-zinc-600 text-center -mt-1">
+          Bu görevi tamamlamak için cüzdanını bağlaman gerekiyor.
+        </p>
+      )}
     </div>
   );
 }
@@ -194,14 +229,14 @@ const TASK_PANELS: Record<TaskId, React.ReactNode> = {
   1: <ConnectPanel />,
   2: <FaucetPanel />,
   3: <GmPanel />,
-  4: <DeployPanel />,
+  4: <NameRegisterPanel />,
 };
 
 const TASKS: { id: TaskId; label: string }[] = [
   { id: 1, label: "1. Ağ ile Tanış (Bağlan)" },
   { id: 2, label: "2. Yakıtını Al (Faucet)" },
   { id: 3, label: "3. Zincire Seslen (GM Arc!)" },
-  { id: 4, label: "4. İlk Kontratını Üret" },
+  { id: 4, label: "4. Arc İsmini Al" },
 ];
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
