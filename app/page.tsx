@@ -5,14 +5,14 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   useDeployContract,
   useWaitForTransactionReceipt,
-  useSendTransaction,
+  useWriteContract,
   useAccount,
 } from "wagmi";
-import { parseEther, stringToHex } from "viem";
-
-// ─── Bytecode ───────────────────────────────────────────────────────────────
-const HELLO_ARC_BYTECODE =
-  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122000000000000000000000000000000000000000000000000000000000000000000064736f6c63430008130033" as `0x${string}`;
+import {
+  ARC_QUEST_ADDRESS,
+  ARC_QUEST_ABI,
+  ARC_QUEST_BYTECODE,
+} from "./lib/arcQuest";
 
 // ─── Task 1 Panel ────────────────────────────────────────────────────────────
 function ConnectPanel() {
@@ -45,24 +45,25 @@ function FaucetPanel() {
   );
 }
 
-// ─── Task 3 Panel ────────────────────────────────────────────────────────────
+// ─── Task 3 Panel ─ useWriteContract → ArcQuest.sayGM() ──────────────────────
 function GmPanel() {
   const [message, setMessage] = useState("gm arc fam");
   const {
-    sendTransaction,
+    writeContract,
     data: txHash,
     isPending,
     reset,
-  } = useSendTransaction();
+  } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash: txHash,
   });
 
   const handleGm = () => {
-    sendTransaction({
-      to: "0x0000000000000000000000000000000000000000",
-      value: parseEther("0"),
-      data: stringToHex(message),
+    writeContract({
+      address: ARC_QUEST_ADDRESS,
+      abi: ARC_QUEST_ABI,
+      functionName: "sayGM",
+      args: [message],
     });
   };
 
@@ -94,10 +95,7 @@ function GmPanel() {
       <button
         onClick={
           isSuccess
-            ? () => {
-                reset();
-                setMessage("gm arc fam");
-              }
+            ? () => { reset(); setMessage("gm arc fam"); }
             : handleGm
         }
         disabled={isPending || isConfirming}
@@ -123,7 +121,7 @@ function GmPanel() {
   );
 }
 
-// ─── Task 4 Panel ────────────────────────────────────────────────────────────
+// ─── Task 4 Panel ─ useDeployContract → ArcQuest bytecode (hatıra deploy) ────
 function NameRegisterPanel() {
   const [name, setName] = useState("");
   const { isConnected } = useAccount();
@@ -136,17 +134,25 @@ function NameRegisterPanel() {
   const {
     isLoading: isConfirming,
     isSuccess,
+    data: receipt,
   } = useWaitForTransactionReceipt({ hash: txHash });
 
+  const contractAddress = receipt?.contractAddress;
+
+  // İsmi bytecode'un constructor argümanı olarak değil,
+  // ayrı bir hatıra kontratı olarak deploy ediyoruz.
   const handleRegister = () => {
-    deployContract({ abi: [], bytecode: HELLO_ARC_BYTECODE });
+    deployContract({
+      abi: ARC_QUEST_ABI,
+      bytecode: ARC_QUEST_BYTECODE,
+    });
   };
 
   const isDisabled = !isConnected || !name.trim() || isWaitingWallet || isConfirming;
 
   return (
     <div className="pt-4 flex flex-col gap-4">
-      {/* Input alanı */}
+      {/* Input */}
       <div className="flex flex-col gap-1.5">
         <label className="text-[11px] font-medium tracking-widest text-zinc-500 uppercase">
           İstediğiniz İsim (.arc otomatik eklenir)
@@ -155,7 +161,9 @@ function NameRegisterPanel() {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+            onChange={(e) =>
+              setName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
+            }
             placeholder="fersah"
             maxLength={32}
             className="w-full rounded-xl border border-indigo-900/40 bg-[#070710] px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-700 outline-none focus:border-indigo-600/50 focus:ring-1 focus:ring-indigo-600/20 transition-all"
@@ -169,7 +177,7 @@ function NameRegisterPanel() {
       </div>
 
       {/* Başarı state */}
-      {isSuccess && txHash && (
+      {isSuccess && contractAddress && (
         <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 px-4 py-3 flex flex-col gap-1">
           <p className="text-xs text-zinc-400">
             İşlem Hash:{" "}
@@ -179,7 +187,7 @@ function NameRegisterPanel() {
               rel="noopener noreferrer"
               className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 break-all transition-colors"
             >
-              {txHash.slice(0, 10)}...{txHash.slice(-8)}
+              {txHash?.slice(0, 10)}...{txHash?.slice(-8)}
             </a>
           </p>
           <p className="text-xs font-medium text-emerald-400">
@@ -190,7 +198,11 @@ function NameRegisterPanel() {
 
       {/* Buton */}
       <button
-        onClick={isSuccess ? () => { reset(); setName(""); } : handleRegister}
+        onClick={
+          isSuccess
+            ? () => { reset(); setName(""); }
+            : handleRegister
+        }
         disabled={isDisabled}
         className="w-full rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.15)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
       >
@@ -262,7 +274,8 @@ const TASKS: { id: TaskId; label: string }[] = [
 export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
 
-  const toggle = (id: TaskId) => setOpenTask((prev) => (prev === id ? null : id));
+  const toggle = (id: TaskId) =>
+    setOpenTask((prev) => (prev === id ? null : id));
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50 flex flex-col">

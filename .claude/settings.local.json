@@ -12,7 +12,9 @@
       "Bash(git push:*)",
       "Bash(wait)",
       "Bash(node -e \"console.log\\(require\\('./node_modules/wagmi/package.json'\\).version\\)\")",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx --yes solc --version)",
+      "Bash(npx solc:*)"
     ]
   }
 }
