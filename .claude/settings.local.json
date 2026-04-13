@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/emreay/Desktop/**)",
+      "Bash(npx create-next-app@latest arc --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --no-git)"
+    ]
+  }
+}
