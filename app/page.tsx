@@ -12,7 +12,7 @@ import { ARC_QUEST_ABI, ARC_QUEST_BYTECODE } from "./lib/arcQuest";
 
 // Gerçek NFT kontratı deploy edildikten sonra bu adres güncellenecek.
 const NFT_CONTRACT_ADDRESS =
-  "0x1234567890123456789012345678901234567890" as `0x${string}`;
+  "0xC330366444B48723c2AAe7B92Fa052e68F1C0C01" as `0x${string}`;
 
 const NFT_MINT_ABI = [
   {
