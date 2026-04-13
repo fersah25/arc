@@ -222,14 +222,32 @@ function NameRegisterPanel() {
   );
 }
 
+// ─── Task 5 Panel ────────────────────────────────────────────────────────────
+function NftMintPanel() {
+  return (
+    <div className="pt-4 flex flex-col gap-4">
+      <p className="text-sm text-zinc-600">
+        Görevleri tamamladıktan sonra NFT mint edebilirsiniz.
+      </p>
+      <button
+        disabled
+        className="w-full rounded-xl border border-zinc-800/50 bg-zinc-900/40 px-4 py-3 text-sm font-semibold tracking-widest text-zinc-600 uppercase cursor-not-allowed opacity-50"
+      >
+        NFT Mintle
+      </button>
+    </div>
+  );
+}
+
 // ─── Task definitions ────────────────────────────────────────────────────────
-type TaskId = 1 | 2 | 3 | 4;
+type TaskId = 1 | 2 | 3 | 4 | 5;
 
 const TASK_PANELS: Record<TaskId, React.ReactNode> = {
   1: <ConnectPanel />,
   2: <FaucetPanel />,
   3: <GmPanel />,
   4: <NameRegisterPanel />,
+  5: <NftMintPanel />,
 };
 
 const TASKS: { id: TaskId; label: string }[] = [
@@ -237,6 +255,7 @@ const TASKS: { id: TaskId; label: string }[] = [
   { id: 2, label: "2. Yakıtını Al (Faucet)" },
   { id: 3, label: "3. Zincire Seslen (GM Arc!)" },
   { id: 4, label: "4. Arc İsmini Al" },
+  { id: 5, label: "5. NFT Mint Et" },
 ];
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
