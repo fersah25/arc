@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   useDeployContract,
@@ -235,17 +235,119 @@ function NameRegisterPanel() {
 }
 
 // ─── Task 5 Panel ────────────────────────────────────────────────────────────
+const NFT_MINT_ADDRESS =
+  "0x4242424242424242424242424242424242424242" as `0x${string}`;
+
+const NFT_MINT_ABI = [
+  {
+    inputs: [],
+    name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+
 function NftMintPanel() {
+  const [yourMints, setYourMints] = useState(0);
+
+  const {
+    writeContract,
+    data: txHash,
+    isPending,
+    reset,
+  } = useWriteContract();
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  useEffect(() => {
+    if (isSuccess) setYourMints((prev) => prev + 1);
+  }, [isSuccess]);
+
+  const handleMint = () => {
+    writeContract({
+      address: NFT_MINT_ADDRESS,
+      abi: NFT_MINT_ABI,
+      functionName: "mint",
+    });
+  };
+
   return (
     <div className="pt-4 flex flex-col gap-4">
-      <p className="text-sm text-zinc-600">
-        Görevleri tamamladıktan sonra NFT mint edebilirsiniz.
-      </p>
+      {/* NFT Önizleme */}
+      <div className="w-full aspect-square max-w-[400px] mx-auto rounded-2xl border border-indigo-900/40 bg-gradient-to-br from-[#0d0d22] via-[#0f0a1e] to-[#0a0a14] flex items-center justify-center shadow-[inset_0_0_40px_rgba(99,102,241,0.07)]">
+        <div className="flex flex-col items-center gap-3 select-none">
+          <div className="w-16 h-16 rounded-full border border-indigo-800/40 bg-indigo-950/40 flex items-center justify-center">
+            <span className="text-2xl">◈</span>
+          </div>
+          <span className="text-xs tracking-widest text-zinc-700 uppercase">
+            Arc Quest NFT
+          </span>
+        </div>
+      </div>
+
+      {/* İstatistik Kutuları */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-zinc-800/60 bg-[#0a0a14] px-4 py-3 flex flex-col gap-1">
+          <span className="text-[10px] font-medium tracking-widest text-zinc-600 uppercase">
+            Toplam Mint
+          </span>
+          <span className="text-2xl font-bold text-zinc-200">10</span>
+        </div>
+        <div className="rounded-xl border border-indigo-900/40 bg-[#0d0d1a] px-4 py-3 flex flex-col gap-1">
+          <span className="text-[10px] font-medium tracking-widest text-indigo-600 uppercase">
+            Sizin Mint&apos;leriniz
+          </span>
+          <span
+            className={`text-2xl font-bold transition-colors duration-300 ${
+              yourMints > 0 ? "text-indigo-300" : "text-zinc-500"
+            }`}
+          >
+            {yourMints}
+          </span>
+        </div>
+      </div>
+
+      {/* Başarı state */}
+      {isSuccess && txHash && (
+        <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 px-4 py-3 flex flex-col gap-1">
+          <p className="text-xs font-medium text-emerald-400">
+            🎉 Tebrikler! NFT&apos;niz Arc ağına başarıyla kazındı!
+          </p>
+          <a
+            href={`https://testnet.arcscan.app/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-emerald-500 hover:text-emerald-300 underline underline-offset-2 break-all transition-colors"
+          >
+            {txHash.slice(0, 10)}...{txHash.slice(-8)}
+          </a>
+        </div>
+      )}
+
+      {/* Buton */}
       <button
-        disabled
-        className="w-full rounded-xl border border-zinc-800/50 bg-zinc-900/40 px-4 py-3 text-sm font-semibold tracking-widest text-zinc-600 uppercase cursor-not-allowed opacity-50"
+        onClick={isSuccess ? () => reset() : handleMint}
+        disabled={isPending || isConfirming}
+        className="w-full rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_20px_rgba(99,102,241,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
       >
-        NFT Mintle
+        {isPending ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="h-3.5 w-3.5 rounded-full border-2 border-indigo-700 border-t-indigo-300 animate-spin" />
+            Cüzdanı Onayla...
+          </span>
+        ) : isConfirming ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="h-3.5 w-3.5 rounded-full border-2 border-indigo-700 border-t-indigo-300 animate-spin" />
+            Mint Ediliyor...
+          </span>
+        ) : isSuccess ? (
+          "Tekrar Mint Et"
+        ) : (
+          "NFT Mint Et"
+        )}
       </button>
     </div>
   );
