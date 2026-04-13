@@ -8,11 +8,21 @@ import {
   useWriteContract,
   useAccount,
 } from "wagmi";
-import {
-  ARC_QUEST_ADDRESS,
-  ARC_QUEST_ABI,
-  ARC_QUEST_BYTECODE,
-} from "./lib/arcQuest";
+import { ARC_QUEST_ABI, ARC_QUEST_BYTECODE } from "./lib/arcQuest";
+
+// Gerçek NFT kontratı deploy edildikten sonra bu adres güncellenecek.
+const NFT_CONTRACT_ADDRESS =
+  "0x1234567890123456789012345678901234567890" as `0x${string}`;
+
+const NFT_MINT_ABI = [
+  {
+    inputs: [],
+    name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
 
 // ─── Task 1 Panel ────────────────────────────────────────────────────────────
 function ConnectPanel() {
@@ -45,83 +55,7 @@ function FaucetPanel() {
   );
 }
 
-// ─── Task 3 Panel ─ useWriteContract → ArcQuest.sayGM() ──────────────────────
-function GmPanel() {
-  const [message, setMessage] = useState("gm arc fam");
-  const {
-    writeContract,
-    data: txHash,
-    isPending,
-    reset,
-  } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash: txHash,
-  });
-
-  const handleGm = () => {
-    writeContract({
-      address: ARC_QUEST_ADDRESS,
-      abi: ARC_QUEST_ABI,
-      functionName: "sayGM",
-      args: [message],
-    });
-  };
-
-  return (
-    <div className="pt-4 flex flex-col gap-3">
-      <p className="text-sm text-zinc-400">
-        Zincire bir mesaj yaz. Arc ağı seni duyacak.
-      </p>
-      <input
-        type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="gm arc fam"
-        className="w-full rounded-lg border border-indigo-900/50 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200 placeholder:text-zinc-600 outline-none focus:border-indigo-600/60 transition-colors"
-      />
-      {isSuccess && txHash && (
-        <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/30 px-4 py-3">
-          <p className="text-xs text-emerald-400 mb-1">✓ Mesaj zincire kazındı!</p>
-          <a
-            href={`https://testnet.arcscan.app/tx/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-emerald-500 hover:text-emerald-300 underline underline-offset-2 break-all transition-colors"
-          >
-            {txHash}
-          </a>
-        </div>
-      )}
-      <button
-        onClick={
-          isSuccess
-            ? () => { reset(); setMessage("gm arc fam"); }
-            : handleGm
-        }
-        disabled={isPending || isConfirming}
-        className="w-full rounded-lg border border-indigo-800/40 bg-indigo-950/60 px-4 py-2.5 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-900/50 hover:text-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isPending ? (
-          <span className="flex items-center justify-center gap-2">
-            <span className="h-3.5 w-3.5 rounded-full border-2 border-indigo-700 border-t-indigo-300 animate-spin" />
-            Cüzdanı Onayla...
-          </span>
-        ) : isConfirming ? (
-          <span className="flex items-center justify-center gap-2">
-            <span className="h-3.5 w-3.5 rounded-full border-2 border-indigo-700 border-t-indigo-300 animate-spin" />
-            Ağda İşleniyor...
-          </span>
-        ) : isSuccess ? (
-          "Tekrar Gönder"
-        ) : (
-          "Ağa Kazı"
-        )}
-      </button>
-    </div>
-  );
-}
-
-// ─── Task 4 Panel ─ useDeployContract → ArcQuest bytecode (hatıra deploy) ────
+// ─── Task 3 Panel ─ useDeployContract → ArcQuest bytecode (hatıra deploy) ────
 function NameRegisterPanel() {
   const [name, setName] = useState("");
   const { isConnected } = useAccount();
@@ -139,8 +73,6 @@ function NameRegisterPanel() {
 
   const contractAddress = receipt?.contractAddress;
 
-  // İsmi bytecode'un constructor argümanı olarak değil,
-  // ayrı bir hatıra kontratı olarak deploy ediyoruz.
   const handleRegister = () => {
     deployContract({
       abi: ARC_QUEST_ABI,
@@ -152,7 +84,6 @@ function NameRegisterPanel() {
 
   return (
     <div className="pt-4 flex flex-col gap-4">
-      {/* Input */}
       <div className="flex flex-col gap-1.5">
         <label className="text-[11px] font-medium tracking-widest text-zinc-500 uppercase">
           İstediğiniz İsim (.arc otomatik eklenir)
@@ -176,7 +107,6 @@ function NameRegisterPanel() {
         </div>
       </div>
 
-      {/* Başarı state */}
       {isSuccess && contractAddress && (
         <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 px-4 py-3 flex flex-col gap-1">
           <p className="text-xs text-zinc-400">
@@ -196,13 +126,8 @@ function NameRegisterPanel() {
         </div>
       )}
 
-      {/* Buton */}
       <button
-        onClick={
-          isSuccess
-            ? () => { reset(); setName(""); }
-            : handleRegister
-        }
+        onClick={isSuccess ? () => { reset(); setName(""); } : handleRegister}
         disabled={isDisabled}
         className="w-full rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.15)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
       >
@@ -234,20 +159,7 @@ function NameRegisterPanel() {
   );
 }
 
-// ─── Task 5 Panel ────────────────────────────────────────────────────────────
-const NFT_MINT_ADDRESS =
-  "0x4242424242424242424242424242424242424242" as `0x${string}`;
-
-const NFT_MINT_ABI = [
-  {
-    inputs: [],
-    name: "mint",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
-
+// ─── Task 4 Panel ─ useWriteContract → NFT mint() ────────────────────────────
 function NftMintPanel() {
   const [yourMints, setYourMints] = useState(0);
 
@@ -268,7 +180,7 @@ function NftMintPanel() {
 
   const handleMint = () => {
     writeContract({
-      address: NFT_MINT_ADDRESS,
+      address: NFT_CONTRACT_ADDRESS,
       abi: NFT_MINT_ABI,
       functionName: "mint",
     });
@@ -276,45 +188,29 @@ function NftMintPanel() {
 
   return (
     <div className="pt-4 flex flex-col gap-4">
-      {/* NFT Önizleme */}
-      <div className="w-full aspect-square max-w-[400px] mx-auto rounded-2xl border border-indigo-900/40 bg-gradient-to-br from-[#0d0d22] via-[#0f0a1e] to-[#0a0a14] flex items-center justify-center shadow-[inset_0_0_40px_rgba(99,102,241,0.07)]">
-        <div className="flex flex-col items-center gap-3 select-none">
-          <div className="w-16 h-16 rounded-full border border-indigo-800/40 bg-indigo-950/40 flex items-center justify-center">
-            <span className="text-2xl">◈</span>
-          </div>
-          <span className="text-xs tracking-widest text-zinc-700 uppercase">
-            Arc Quest NFT
-          </span>
-        </div>
-      </div>
+      <p className="text-sm text-zinc-400">
+        Tüm görevleri tamamladıktan sonra Arc Quest NFT&apos;ni mint et ve koleksiyonuna ekle.
+      </p>
 
-      {/* İstatistik Kutuları */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-zinc-800/60 bg-[#0a0a14] px-4 py-3 flex flex-col gap-1">
-          <span className="text-[10px] font-medium tracking-widest text-zinc-600 uppercase">
-            Toplam Mint
-          </span>
-          <span className="text-2xl font-bold text-zinc-200">10</span>
-        </div>
-        <div className="rounded-xl border border-indigo-900/40 bg-[#0d0d1a] px-4 py-3 flex flex-col gap-1">
-          <span className="text-[10px] font-medium tracking-widest text-indigo-600 uppercase">
-            Sizin Mint&apos;leriniz
-          </span>
-          <span
-            className={`text-2xl font-bold transition-colors duration-300 ${
-              yourMints > 0 ? "text-indigo-300" : "text-zinc-500"
-            }`}
-          >
-            {yourMints}
-          </span>
-        </div>
+      {/* Sayaç */}
+      <div className="rounded-xl border border-indigo-900/40 bg-[#0d0d1a] px-4 py-3 flex items-center justify-between">
+        <span className="text-[11px] font-medium tracking-widest text-indigo-600 uppercase">
+          Sizin Mint&apos;leriniz
+        </span>
+        <span
+          className={`text-2xl font-bold transition-colors duration-300 ${
+            yourMints > 0 ? "text-indigo-300" : "text-zinc-600"
+          }`}
+        >
+          {yourMints}
+        </span>
       </div>
 
       {/* Başarı state */}
       {isSuccess && txHash && (
         <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 px-4 py-3 flex flex-col gap-1">
           <p className="text-xs font-medium text-emerald-400">
-            🎉 Tebrikler! NFT&apos;niz Arc ağına başarıyla kazındı!
+            ✓ NFT Başarıyla Mintlendi!
           </p>
           <a
             href={`https://testnet.arcscan.app/tx/${txHash}`}
@@ -354,22 +250,20 @@ function NftMintPanel() {
 }
 
 // ─── Task definitions ────────────────────────────────────────────────────────
-type TaskId = 1 | 2 | 3 | 4 | 5;
+type TaskId = 1 | 2 | 3 | 4;
 
 const TASK_PANELS: Record<TaskId, React.ReactNode> = {
   1: <ConnectPanel />,
   2: <FaucetPanel />,
-  3: <GmPanel />,
-  4: <NameRegisterPanel />,
-  5: <NftMintPanel />,
+  3: <NameRegisterPanel />,
+  4: <NftMintPanel />,
 };
 
 const TASKS: { id: TaskId; label: string }[] = [
   { id: 1, label: "1. Ağ ile Tanış (Bağlan)" },
   { id: 2, label: "2. Yakıtını Al (Faucet)" },
-  { id: 3, label: "3. Zincire Seslen (GM Arc!)" },
-  { id: 4, label: "4. Arc İsmini Al" },
-  { id: 5, label: "5. NFT Mint Et" },
+  { id: 3, label: "3. Arc İsmini Al" },
+  { id: 4, label: "4. NFT Mint Et" },
 ];
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
@@ -418,7 +312,6 @@ export default function Home() {
                     : "border-zinc-800/70 bg-[#0a0a14] hover:border-zinc-700/60 hover:shadow-[0_0_12px_rgba(99,102,241,0.07)]"
                 }`}
               >
-                {/* Accordion Header */}
                 <button
                   onClick={() => toggle(id)}
                   className="w-full flex items-center justify-between px-5 py-4 text-left"
@@ -439,7 +332,6 @@ export default function Home() {
                   </span>
                 </button>
 
-                {/* Accordion Panel */}
                 <div
                   className={`overflow-hidden transition-all duration-300 ${
                     isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
