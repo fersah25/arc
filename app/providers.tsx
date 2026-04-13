@@ -16,7 +16,7 @@ export const arcTestnet = defineChain({
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: ["https://rpc-testnet.arc.network"] },
+    default: { http: ["https://rpc.testnet.arc.network"] },
   },
   testnet: true,
 });
