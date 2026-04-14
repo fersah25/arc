@@ -10,9 +10,8 @@ import {
 } from "wagmi";
 import { ARC_QUEST_ABI, ARC_QUEST_BYTECODE } from "./lib/arcQuest";
 
-// Gerçek NFT kontratı deploy edildikten sonra bu adres güncellenecek.
 const NFT_CONTRACT_ADDRESS =
-  "0xC330366444B48723c2AAe7B92Fa052e68F1C0C01" as `0x${string}`;
+  "0xaC6c66B9BE4e7610A2D74Dc9025d3fa676981A5B" as `0x${string}`;
 
 const NFT_MINT_ABI = [
   {
@@ -188,10 +187,6 @@ function NftMintPanel() {
 
   return (
     <div className="pt-4 flex flex-col gap-4">
-      <p className="text-sm text-zinc-400">
-        Tüm görevleri tamamladıktan sonra Arc Quest NFT&apos;ni mint et ve koleksiyonuna ekle.
-      </p>
-
       {/* Sayaç */}
       <div className="rounded-xl border border-indigo-900/40 bg-[#0d0d1a] px-4 py-3 flex items-center justify-between">
         <span className="text-[11px] font-medium tracking-widest text-indigo-600 uppercase">
