@@ -72,7 +72,7 @@ function FaucetPanel() {
 }
 
 // ─── Task 3 Panel ─ useDeployContract → ArcQuest bytecode (hatıra deploy) ────
-function NameRegisterPanel() {
+function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const [name, setName] = useState("");
   const { isConnected } = useAccount();
   const {
@@ -88,6 +88,10 @@ function NameRegisterPanel() {
   } = useWaitForTransactionReceipt({ hash: txHash });
 
   const contractAddress = receipt?.contractAddress;
+
+  useEffect(() => {
+    if (isSuccess) onSuccess?.();
+  }, [isSuccess, onSuccess]);
 
   const handleRegister = () => {
     deployContract({
@@ -342,14 +346,6 @@ function GmGmPanel() {
 // ─── Task definitions ────────────────────────────────────────────────────────
 type TaskId = 1 | 2 | 3 | 4 | 5;
 
-const TASK_PANELS: Record<TaskId, React.ReactNode> = {
-  1: <ConnectPanel />,
-  2: <FaucetPanel />,
-  3: <NameRegisterPanel />,
-  4: <NftMintPanel />,
-  5: <GmGmPanel />,
-};
-
 const TASKS: { id: TaskId; label: string }[] = [
   { id: 1, label: "1. Ağ ile Tanış (Bağlan)" },
   { id: 2, label: "2. Yakıtını Al (Faucet)" },
@@ -363,7 +359,7 @@ export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
   const { address, isConnected } = useAccount();
 
-  const { data: resolvedName } = useReadContract({
+  const { data: resolvedName, refetch: refetchName } = useReadContract({
     address: NAME_REGISTRY_ADDRESS,
     abi: NAME_REGISTRY_ABI,
     functionName: "getName",
@@ -372,6 +368,14 @@ export default function Home() {
   });
 
   const userName = resolvedName && resolvedName.trim() !== "" ? resolvedName : null;
+
+  const taskPanels: Record<TaskId, React.ReactNode> = {
+    1: <ConnectPanel />,
+    2: <FaucetPanel />,
+    3: <NameRegisterPanel onSuccess={refetchName} />,
+    4: <NftMintPanel />,
+    5: <GmGmPanel />,
+  };
 
   const greeting = !isConnected
     ? "Lütfen Cüzdanınızı Bağlayın"
@@ -452,7 +456,7 @@ export default function Home() {
                     isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                   }`}
                 >
-                  <div className="px-5 pb-5">{TASK_PANELS[id]}</div>
+                  <div className="px-5 pb-5">{taskPanels[id]}</div>
                 </div>
               </div>
             );
