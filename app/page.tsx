@@ -6,8 +6,10 @@ import {
   useDeployContract,
   useWaitForTransactionReceipt,
   useWriteContract,
+  useSendTransaction,
   useAccount,
 } from "wagmi";
+import { toHex } from "viem";
 import { ARC_QUEST_ABI, ARC_QUEST_BYTECODE } from "./lib/arcQuest";
 
 const NFT_CONTRACT_ADDRESS =
@@ -244,14 +246,93 @@ function NftMintPanel() {
   );
 }
 
+// ─── Task 5 Panel ─ useSendTransaction → zincire mesaj ──────────────────────
+function GmGmPanel() {
+  const [message, setMessage] = useState("gm arc fam");
+  const {
+    sendTransaction,
+    data: txHash,
+    isPending,
+    reset,
+  } = useSendTransaction();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  const handleSend = () => {
+    sendTransaction({
+      to: undefined,
+      data: toHex(message),
+    });
+  };
+
+  return (
+    <div className="pt-4 flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[11px] font-medium tracking-widest text-zinc-500 uppercase">
+          M E S A J I N I Z
+        </label>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="gm arc fam"
+          className="w-full rounded-xl border border-indigo-900/40 bg-[#070710] px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-700 outline-none focus:border-indigo-600/50 focus:ring-1 focus:ring-indigo-600/20 transition-all"
+        />
+      </div>
+
+      {isSuccess && txHash && (
+        <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 px-4 py-3 flex flex-col gap-1">
+          <p className="text-xs font-medium text-emerald-400">
+            ✓ Mesajınız Arc ağına başarıyla kazındı!
+          </p>
+          <a
+            href={`https://testnet.arcscan.app/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-emerald-500 hover:text-emerald-300 underline underline-offset-2 break-all transition-colors"
+          >
+            {txHash.slice(0, 10)}...{txHash.slice(-8)}
+          </a>
+        </div>
+      )}
+
+      <button
+        onClick={
+          isSuccess ? () => { reset(); setMessage("gm arc fam"); } : handleSend
+        }
+        disabled={!message.trim() || isPending || isConfirming}
+        className="w-full rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.15)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
+      >
+        {isPending ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="h-3.5 w-3.5 rounded-full border-2 border-indigo-700 border-t-indigo-300 animate-spin" />
+            Cüzdanı Onayla...
+          </span>
+        ) : isConfirming ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="h-3.5 w-3.5 rounded-full border-2 border-indigo-700 border-t-indigo-300 animate-spin" />
+            Ağda İşleniyor...
+          </span>
+        ) : isSuccess ? (
+          "Tekrar Gönder"
+        ) : (
+          "Mesaj Gönder"
+        )}
+      </button>
+    </div>
+  );
+}
+
 // ─── Task definitions ────────────────────────────────────────────────────────
-type TaskId = 1 | 2 | 3 | 4;
+type TaskId = 1 | 2 | 3 | 4 | 5;
 
 const TASK_PANELS: Record<TaskId, React.ReactNode> = {
   1: <ConnectPanel />,
   2: <FaucetPanel />,
   3: <NameRegisterPanel />,
   4: <NftMintPanel />,
+  5: <GmGmPanel />,
 };
 
 const TASKS: { id: TaskId; label: string }[] = [
@@ -259,6 +340,7 @@ const TASKS: { id: TaskId; label: string }[] = [
   { id: 2, label: "2. Yakıtını Al (Faucet)" },
   { id: 3, label: "3. Arc İsmini Al" },
   { id: 4, label: "4. NFT Mint Et" },
+  { id: 5, label: "5. GMGM Guys (Zincire Seslen)" },
 ];
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
