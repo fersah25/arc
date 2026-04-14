@@ -38,6 +38,13 @@ const NFT_MINT_ABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [{ internalType: "address", name: "owner", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 // ─── Task 1 Panel ────────────────────────────────────────────────────────────
@@ -180,9 +187,13 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
 }
 
 // ─── Task 4 Panel ─ useWriteContract → NFT mint() ────────────────────────────
-function NftMintPanel() {
-  const [yourMints, setYourMints] = useState(0);
-
+function NftMintPanel({
+  balance,
+  onMintSuccess,
+}: {
+  balance?: number;
+  onMintSuccess?: () => void;
+}) {
   const {
     writeContract,
     data: txHash,
@@ -195,8 +206,8 @@ function NftMintPanel() {
   });
 
   useEffect(() => {
-    if (isSuccess) setYourMints((prev) => prev + 1);
-  }, [isSuccess]);
+    if (isSuccess) onMintSuccess?.();
+  }, [isSuccess, onMintSuccess]);
 
   const handleMint = () => {
     writeContract({
@@ -206,19 +217,21 @@ function NftMintPanel() {
     });
   };
 
+  const displayBalance = balance ?? 0;
+
   return (
     <div className="pt-4 flex flex-col gap-4">
-      {/* Sayaç */}
+      {/* Sayaç — zincirden okunan gerçek değer */}
       <div className="rounded-xl border border-indigo-900/40 bg-[#0d0d1a] px-4 py-3 flex items-center justify-between">
         <span className="text-[11px] font-medium tracking-widest text-indigo-600 uppercase">
           Sizin Mint&apos;leriniz
         </span>
         <span
           className={`text-2xl font-bold transition-colors duration-300 ${
-            yourMints > 0 ? "text-indigo-300" : "text-zinc-600"
+            displayBalance > 0 ? "text-indigo-300" : "text-zinc-600"
           }`}
         >
-          {yourMints}
+          {displayBalance}
         </span>
       </div>
 
@@ -359,6 +372,7 @@ export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
   const { address, isConnected } = useAccount();
 
+  // Sorgu A — isim kaydı
   const { data: resolvedName, refetch: refetchName } = useReadContract({
     address: NAME_REGISTRY_ADDRESS,
     abi: NAME_REGISTRY_ABI,
@@ -367,13 +381,23 @@ export default function Home() {
     query: { enabled: !!address },
   });
 
+  // Sorgu B — NFT bakiyesi
+  const { data: rawBalance, refetch: refetchBalance } = useReadContract({
+    address: NFT_CONTRACT_ADDRESS,
+    abi: NFT_MINT_ABI,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
   const userName = resolvedName && resolvedName.trim() !== "" ? resolvedName : null;
+  const nftBalance = rawBalance !== undefined ? Number(rawBalance) : undefined;
 
   const taskPanels: Record<TaskId, React.ReactNode> = {
     1: <ConnectPanel />,
     2: <FaucetPanel />,
     3: <NameRegisterPanel onSuccess={refetchName} />,
-    4: <NftMintPanel />,
+    4: <NftMintPanel balance={nftBalance} onMintSuccess={refetchBalance} />,
     5: <GmGmPanel />,
   };
 
