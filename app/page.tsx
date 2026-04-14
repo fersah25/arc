@@ -84,7 +84,7 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const [name, setName] = useState("");
   const { isConnected } = useAccount();
   const { increment } = useQuestStats();
-  const didIncrement = useRef(false);
+  const lastHandledHash = useRef<string | undefined>(undefined);
   const {
     deployContract,
     data: txHash,
@@ -100,13 +100,13 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const contractAddress = receipt?.contractAddress;
 
   useEffect(() => {
-    if (isSuccess && !didIncrement.current) {
-      didIncrement.current = true;
+    if (isSuccess && txHash && lastHandledHash.current !== txHash) {
+      lastHandledHash.current = txHash;
+      console.log("Görev Başarılı: Arc İsmi Al, Sayaç Artırıldı", txHash);
       onSuccess?.();
       increment();
     }
-    if (!isSuccess) didIncrement.current = false;
-  }, [isSuccess, onSuccess, increment]);
+  }, [isSuccess, txHash, onSuccess, increment]);
 
   const handleRegister = () => {
     deployContract({ abi: ARC_QUEST_ABI, bytecode: ARC_QUEST_BYTECODE });
@@ -200,7 +200,7 @@ function NftMintPanel({
   onMintSuccess?: () => void;
 }) {
   const { increment } = useQuestStats();
-  const didIncrement = useRef(false);
+  const lastHandledHash = useRef<string | undefined>(undefined);
   const {
     writeContract,
     data: txHash,
@@ -212,13 +212,13 @@ function NftMintPanel({
   });
 
   useEffect(() => {
-    if (isSuccess && !didIncrement.current) {
-      didIncrement.current = true;
+    if (isSuccess && txHash && lastHandledHash.current !== txHash) {
+      lastHandledHash.current = txHash;
+      console.log("Görev Başarılı: NFT Mint Et, Sayaç Artırıldı", txHash);
       onMintSuccess?.();
       increment();
     }
-    if (!isSuccess) didIncrement.current = false;
-  }, [isSuccess, onMintSuccess, increment]);
+  }, [isSuccess, txHash, onMintSuccess, increment]);
 
   const handleMint = () => {
     writeContract({
@@ -284,7 +284,7 @@ function NftMintPanel({
 function GmGmPanel() {
   const [message, setMessage] = useState("gm arc fam");
   const { increment } = useQuestStats();
-  const didIncrement = useRef(false);
+  const lastHandledHash = useRef<string | undefined>(undefined);
   const {
     sendTransaction,
     data: txHash,
@@ -296,12 +296,12 @@ function GmGmPanel() {
   });
 
   useEffect(() => {
-    if (isSuccess && !didIncrement.current) {
-      didIncrement.current = true;
+    if (isSuccess && txHash && lastHandledHash.current !== txHash) {
+      lastHandledHash.current = txHash;
+      console.log("Görev Başarılı: GMGM Gönder, Sayaç Artırıldı", txHash);
       increment();
     }
-    if (!isSuccess) didIncrement.current = false;
-  }, [isSuccess, increment]);
+  }, [isSuccess, txHash, increment]);
 
   const handleSend = () => {
     sendTransaction({ to: undefined, data: toHex(message) });
