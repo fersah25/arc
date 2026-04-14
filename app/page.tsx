@@ -7,10 +7,25 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
   useSendTransaction,
+  useReadContract,
   useAccount,
 } from "wagmi";
 import { toHex } from "viem";
 import { ARC_QUEST_ABI, ARC_QUEST_BYTECODE } from "./lib/arcQuest";
+
+// Arc Name Registry — deploy edildikten sonra bu adres güncellenecek
+const NAME_REGISTRY_ADDRESS =
+  "0x0000000000000000000000000000000000000000" as `0x${string}`;
+
+const NAME_REGISTRY_ABI = [
+  {
+    inputs: [{ internalType: "address", name: "user", type: "address" }],
+    name: "getName",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
 
 const NFT_CONTRACT_ADDRESS =
   "0xaC6c66B9BE4e7610A2D74Dc9025d3fa676981A5B" as `0x${string}`;
@@ -346,6 +361,23 @@ const TASKS: { id: TaskId; label: string }[] = [
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
+  const { address, isConnected } = useAccount();
+
+  const { data: resolvedName } = useReadContract({
+    address: NAME_REGISTRY_ADDRESS,
+    abi: NAME_REGISTRY_ABI,
+    functionName: "getName",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const userName = resolvedName && resolvedName.trim() !== "" ? resolvedName : null;
+
+  const greeting = !isConnected
+    ? "Lütfen Cüzdanınızı Bağlayın"
+    : userName
+    ? `Hoş geldin, ${userName}.arc`
+    : `Hoş geldin, ${address?.slice(0, 6)}...${address?.slice(-4)}`;
 
   const toggle = (id: TaskId) =>
     setOpenTask((prev) => (prev === id ? null : id));
@@ -368,6 +400,12 @@ export default function Home() {
       {/* Main */}
       <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
         <div className="mb-8">
+          {/* Karşılama */}
+          <p className={`text-xs font-medium tracking-widest uppercase mb-3 ${
+            !isConnected ? "text-zinc-600" : "text-indigo-400"
+          }`}>
+            {greeting}
+          </p>
           <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-300 via-violet-300 to-zinc-200 bg-clip-text text-transparent">
             Arc Testnet Görevleri
           </h1>
