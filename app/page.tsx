@@ -12,8 +12,9 @@ import {
 } from "wagmi";
 import { toHex } from "viem";
 import { ARC_QUEST_ABI, ARC_QUEST_BYTECODE } from "./lib/arcQuest";
+import { QuestProvider, useQuestStats } from "./lib/questContext";
 
-// Arc Name Registry — deploy edildikten sonra bu adres güncellenecek
+// ─── Kontrat sabitleri ────────────────────────────────────────────────────────
 const NAME_REGISTRY_ADDRESS =
   "0x0000000000000000000000000000000000000000" as `0x${string}`;
 
@@ -47,7 +48,7 @@ const NFT_MINT_ABI = [
   },
 ] as const;
 
-// ─── Task 1 Panel ────────────────────────────────────────────────────────────
+// ─── Task 1 ───────────────────────────────────────────────────────────────────
 function ConnectPanel() {
   return (
     <div className="pt-4 flex flex-col gap-2">
@@ -61,7 +62,7 @@ function ConnectPanel() {
   );
 }
 
-// ─── Task 2 Panel ────────────────────────────────────────────────────────────
+// ─── Task 2 ───────────────────────────────────────────────────────────────────
 function FaucetPanel() {
   return (
     <div className="pt-4 flex flex-col gap-2">
@@ -78,10 +79,11 @@ function FaucetPanel() {
   );
 }
 
-// ─── Task 3 Panel ─ useDeployContract → ArcQuest bytecode (hatıra deploy) ────
+// ─── Task 3 ─ isim kaydı ──────────────────────────────────────────────────────
 function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const [name, setName] = useState("");
   const { isConnected } = useAccount();
+  const { increment } = useQuestStats();
   const {
     deployContract,
     data: txHash,
@@ -97,14 +99,14 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const contractAddress = receipt?.contractAddress;
 
   useEffect(() => {
-    if (isSuccess) onSuccess?.();
-  }, [isSuccess, onSuccess]);
+    if (isSuccess) {
+      onSuccess?.();
+      increment();
+    }
+  }, [isSuccess, onSuccess, increment]);
 
   const handleRegister = () => {
-    deployContract({
-      abi: ARC_QUEST_ABI,
-      bytecode: ARC_QUEST_BYTECODE,
-    });
+    deployContract({ abi: ARC_QUEST_ABI, bytecode: ARC_QUEST_BYTECODE });
   };
 
   const isDisabled = !isConnected || !name.trim() || isWaitingWallet || isConfirming;
@@ -186,7 +188,7 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   );
 }
 
-// ─── Task 4 Panel ─ useWriteContract → NFT mint() ────────────────────────────
+// ─── Task 4 ─ NFT mint ────────────────────────────────────────────────────────
 function NftMintPanel({
   balance,
   onMintSuccess,
@@ -194,20 +196,23 @@ function NftMintPanel({
   balance?: number;
   onMintSuccess?: () => void;
 }) {
+  const { increment } = useQuestStats();
   const {
     writeContract,
     data: txHash,
     isPending,
     reset,
   } = useWriteContract();
-
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash: txHash,
   });
 
   useEffect(() => {
-    if (isSuccess) onMintSuccess?.();
-  }, [isSuccess, onMintSuccess]);
+    if (isSuccess) {
+      onMintSuccess?.();
+      increment();
+    }
+  }, [isSuccess, onMintSuccess, increment]);
 
   const handleMint = () => {
     writeContract({
@@ -221,26 +226,18 @@ function NftMintPanel({
 
   return (
     <div className="pt-4 flex flex-col gap-4">
-      {/* Sayaç — zincirden okunan gerçek değer */}
       <div className="rounded-xl border border-indigo-900/40 bg-[#0d0d1a] px-4 py-3 flex items-center justify-between">
         <span className="text-[11px] font-medium tracking-widest text-indigo-600 uppercase">
           Sizin Mint&apos;leriniz
         </span>
-        <span
-          className={`text-2xl font-bold transition-colors duration-300 ${
-            displayBalance > 0 ? "text-indigo-300" : "text-zinc-600"
-          }`}
-        >
+        <span className={`text-2xl font-bold transition-colors duration-300 ${displayBalance > 0 ? "text-indigo-300" : "text-zinc-600"}`}>
           {displayBalance}
         </span>
       </div>
 
-      {/* Başarı state */}
       {isSuccess && txHash && (
         <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 px-4 py-3 flex flex-col gap-1">
-          <p className="text-xs font-medium text-emerald-400">
-            ✓ NFT Başarıyla Mintlendi!
-          </p>
+          <p className="text-xs font-medium text-emerald-400">✓ NFT Başarıyla Mintlendi!</p>
           <a
             href={`https://testnet.arcscan.app/tx/${txHash}`}
             target="_blank"
@@ -252,7 +249,6 @@ function NftMintPanel({
         </div>
       )}
 
-      {/* Buton */}
       <button
         onClick={isSuccess ? () => reset() : handleMint}
         disabled={isPending || isConfirming}
@@ -278,9 +274,10 @@ function NftMintPanel({
   );
 }
 
-// ─── Task 5 Panel ─ useSendTransaction → zincire mesaj ──────────────────────
+// ─── Task 5 ─ zincire mesaj ───────────────────────────────────────────────────
 function GmGmPanel() {
   const [message, setMessage] = useState("gm arc fam");
+  const { increment } = useQuestStats();
   const {
     sendTransaction,
     data: txHash,
@@ -291,11 +288,12 @@ function GmGmPanel() {
     hash: txHash,
   });
 
+  useEffect(() => {
+    if (isSuccess) increment();
+  }, [isSuccess, increment]);
+
   const handleSend = () => {
-    sendTransaction({
-      to: undefined,
-      data: toHex(message),
-    });
+    sendTransaction({ to: undefined, data: toHex(message) });
   };
 
   return (
@@ -330,9 +328,7 @@ function GmGmPanel() {
       )}
 
       <button
-        onClick={
-          isSuccess ? () => { reset(); setMessage("gm arc fam"); } : handleSend
-        }
+        onClick={isSuccess ? () => { reset(); setMessage("gm arc fam"); } : handleSend}
         disabled={!message.trim() || isPending || isConfirming}
         className="w-full rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.15)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
       >
@@ -356,7 +352,32 @@ function GmGmPanel() {
   );
 }
 
-// ─── Task definitions ────────────────────────────────────────────────────────
+// ─── İstatistik paneli ────────────────────────────────────────────────────────
+function QuestStatsPanel() {
+  const { totalSiteInteractions, todaySiteInteractions } = useQuestStats();
+  return (
+    <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="rounded-xl border border-zinc-800/50 bg-[#0a0a14] px-5 py-4 flex flex-col gap-1.5">
+        <span className="text-[10px] font-medium tracking-widest text-zinc-600 uppercase">
+          Toplam İşlem
+        </span>
+        <span className="text-4xl font-bold tracking-tight text-indigo-300 tabular-nums">
+          {totalSiteInteractions}
+        </span>
+      </div>
+      <div className="rounded-xl border border-violet-900/40 bg-[#0d0a1e] px-5 py-4 flex flex-col gap-1.5">
+        <span className="text-[10px] font-medium tracking-widest text-violet-600 uppercase">
+          Bugünkü İşlem
+        </span>
+        <span className="text-4xl font-bold tracking-tight text-violet-300 tabular-nums">
+          {todaySiteInteractions}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Task definitions ─────────────────────────────────────────────────────────
 type TaskId = 1 | 2 | 3 | 4 | 5;
 
 const TASKS: { id: TaskId; label: string }[] = [
@@ -367,7 +388,7 @@ const TASKS: { id: TaskId; label: string }[] = [
   { id: 5, label: "5. GMGM Guys (Zincire Seslen)" },
 ];
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+// ─── Ana sayfa ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
   const { address, isConnected } = useAccount();
@@ -381,7 +402,7 @@ export default function Home() {
     query: { enabled: !!address },
   });
 
-  // Sorgu B — NFT mint sayısı (zincirden)
+  // Sorgu B — NFT mint sayısı
   const { data: rawBalance, refetch: refetchBalance } = useReadContract({
     address: NFT_CONTRACT_ADDRESS,
     abi: NFT_MINT_ABI,
@@ -390,16 +411,11 @@ export default function Home() {
     query: { enabled: !!address },
   });
 
-  const userName = resolvedName && resolvedName.trim() !== "" ? resolvedName : null;
+  const userName = resolvedName?.trim() || null;
   const nftBalance = rawBalance !== undefined ? Number(rawBalance) : undefined;
 
-  const taskPanels: Record<TaskId, React.ReactNode> = {
-    1: <ConnectPanel />,
-    2: <FaucetPanel />,
-    3: <NameRegisterPanel onSuccess={refetchName} />,
-    4: <NftMintPanel balance={nftBalance} onMintSuccess={refetchBalance} />,
-    5: <GmGmPanel />,
-  };
+  // Zincirden başlangıç değeri: NFT sayısı + isim bayrağı
+  const chainTotal = (nftBalance ?? 0) + (userName ? 1 : 0);
 
   const greeting = !isConnected
     ? "Lütfen Cüzdanınızı Bağlayın"
@@ -410,90 +426,91 @@ export default function Home() {
   const toggle = (id: TaskId) =>
     setOpenTask((prev) => (prev === id ? null : id));
 
+  const taskPanels: Record<TaskId, React.ReactNode> = {
+    1: <ConnectPanel />,
+    2: <FaucetPanel />,
+    3: <NameRegisterPanel onSuccess={refetchName} />,
+    4: <NftMintPanel balance={nftBalance} onMintSuccess={refetchBalance} />,
+    5: <GmGmPanel />,
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-50 flex flex-col">
-      {/* Header */}
-      <header className="border-b border-zinc-800/60 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.8)]" />
-            <span className="text-sm font-semibold tracking-tight text-zinc-100">
-              Arc Quest Dashboard
-            </span>
+    <QuestProvider chainTotal={chainTotal}>
+      <div className="min-h-screen bg-zinc-950 text-zinc-50 flex flex-col">
+        {/* Header */}
+        <header className="border-b border-zinc-800/60 px-6 py-4">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.8)]" />
+              <span className="text-sm font-semibold tracking-tight text-zinc-100">
+                Arc Quest Dashboard
+              </span>
+            </div>
+            <ConnectButton showBalance={false} />
           </div>
-          <ConnectButton showBalance={false} />
-        </div>
-      </header>
+        </header>
 
-      {/* Main */}
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
-        <div className="mb-8">
-          {/* Karşılama */}
-          <p className={`text-xs font-medium tracking-widest uppercase mb-3 ${
-            !isConnected ? "text-zinc-600" : "text-indigo-400"
-          }`}>
-            {greeting}
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-300 via-violet-300 to-zinc-200 bg-clip-text text-transparent">
-            Arc Testnet Görevleri
-          </h1>
-          <p className="text-sm text-zinc-500 mt-1">
-            Görevleri tamamla, ağla etkileşime gir.
-          </p>
-        </div>
+        {/* Main */}
+        <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
+          <div className="mb-8">
+            {/* Karşılama */}
+            <p className={`text-xs font-medium tracking-widest uppercase mb-3 ${
+              !isConnected ? "text-zinc-600" : "text-indigo-400"
+            }`}>
+              {greeting}
+            </p>
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-300 via-violet-300 to-zinc-200 bg-clip-text text-transparent">
+              Arc Testnet Görevleri
+            </h1>
+            <p className="text-sm text-zinc-500 mt-1 mb-6">
+              Görevleri tamamla, ağla etkileşime gir.
+            </p>
 
-        {/* Accordion */}
-        <div className="flex flex-col gap-3">
-          {TASKS.map(({ id, label }) => {
-            const isOpen = openTask === id;
-            return (
-              <div
-                key={id}
-                className={`rounded-xl border transition-all duration-300 ${
-                  isOpen
-                    ? "border-indigo-700/50 bg-[#0d0d1a] shadow-[0_0_24px_rgba(99,102,241,0.12)]"
-                    : "border-zinc-800/70 bg-[#0a0a14] hover:border-zinc-700/60 hover:shadow-[0_0_12px_rgba(99,102,241,0.07)]"
-                }`}
-              >
-                <button
-                  onClick={() => toggle(id)}
-                  className="w-full flex items-center justify-between px-5 py-4 text-left"
-                >
-                  <span
-                    className={`text-sm font-semibold transition-colors duration-200 ${
-                      isOpen ? "text-indigo-300" : "text-zinc-300"
-                    }`}
-                  >
-                    {label}
-                  </span>
-                  <span
-                    className={`text-zinc-500 transition-transform duration-300 ${
-                      isOpen ? "rotate-180 text-indigo-400" : ""
-                    }`}
-                  >
-                    ▾
-                  </span>
-                </button>
+            {/* İstatistik paneli */}
+            <QuestStatsPanel />
+          </div>
 
+          {/* Accordion */}
+          <div className="flex flex-col gap-3">
+            {TASKS.map(({ id, label }) => {
+              const isOpen = openTask === id;
+              return (
                 <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                  key={id}
+                  className={`rounded-xl border transition-all duration-300 ${
+                    isOpen
+                      ? "border-indigo-700/50 bg-[#0d0d1a] shadow-[0_0_24px_rgba(99,102,241,0.12)]"
+                      : "border-zinc-800/70 bg-[#0a0a14] hover:border-zinc-700/60 hover:shadow-[0_0_12px_rgba(99,102,241,0.07)]"
                   }`}
                 >
-                  <div className="px-5 pb-5">{taskPanels[id]}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </main>
+                  <button
+                    onClick={() => toggle(id)}
+                    className="w-full flex items-center justify-between px-5 py-4 text-left"
+                  >
+                    <span className={`text-sm font-semibold transition-colors duration-200 ${isOpen ? "text-indigo-300" : "text-zinc-300"}`}>
+                      {label}
+                    </span>
+                    <span className={`text-zinc-500 transition-transform duration-300 ${isOpen ? "rotate-180 text-indigo-400" : ""}`}>
+                      ▾
+                    </span>
+                  </button>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-800/60 px-6 py-4">
-        <div className="max-w-2xl mx-auto text-xs text-zinc-700 text-center">
-          Arc Network Testnet — Chain ID 5042002
-        </div>
-      </footer>
-    </div>
+                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                    <div className="px-5 pb-5">{taskPanels[id]}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="border-t border-zinc-800/60 px-6 py-4">
+          <div className="max-w-2xl mx-auto text-xs text-zinc-700 text-center">
+            Arc Network Testnet — Chain ID 5042002
+          </div>
+        </footer>
+      </div>
+    </QuestProvider>
   );
 }
