@@ -11,91 +11,112 @@ import {
 
 // ─── Tipler ──────────────────────────────────────────────────────────────────
 interface QuestStats {
+  // chainNftCount + localExtra (kalıcı, sayfa yenilemesine dayanıklı)
   totalSiteInteractions: number;
+  // Bugünkü tüm görev sayısı (adres + tarih bazlı)
   todaySiteInteractions: number;
-  increment: () => void;
+  // NFT dışı görevler (GMGM, İsim) → extra + daily artırır
+  incrementOffChain: () => void;
+  // NFT mint → sadece daily artırır (toplam zincirden okunur)
+  incrementOnChain: () => void;
 }
 
-// ─── Context ─────────────────────────────────────────────────────────────────
 const QuestContext = createContext<QuestStats>({
   totalSiteInteractions: 0,
   todaySiteInteractions: 0,
-  increment: () => {},
+  incrementOffChain: () => {},
+  incrementOnChain: () => {},
 });
 
-// ─── localStorage yardımcıları (adrese özel) ──────────────────────────────────
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
+// ─── localStorage key'leri ────────────────────────────────────────────────────
+function extraKey(address: string) {
+  return `arc_quest_extra_${address.toLowerCase()}`;
 }
 
-function lsKey(address: string): string {
-  return `arc_quest_daily_${address.toLowerCase()}_${todayStr()}`;
+function dailyKey(address: string) {
+  const today = new Date().toISOString().slice(0, 10);
+  return `arc_quest_daily_${address.toLowerCase()}_${today}`;
 }
 
-function readToday(address: string): number {
-  if (typeof window === "undefined" || !address) return 0;
+// ─── Okuma / yazma yardımcıları ───────────────────────────────────────────────
+function readNum(key: string): number {
+  if (typeof window === "undefined") return 0;
   try {
-    const raw = localStorage.getItem(lsKey(address));
-    return raw ? (JSON.parse(raw) as number) : 0;
+    const v = localStorage.getItem(key);
+    return v ? (JSON.parse(v) as number) : 0;
   } catch {
     return 0;
   }
 }
 
-function writeToday(address: string, count: number): void {
-  if (!address) return;
-  localStorage.setItem(lsKey(address), JSON.stringify(count));
+function writeNum(key: string, value: number) {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 // ─── Provider ────────────────────────────────────────────────────────────────
+// chainNftCount : NFT kontratından gelen sayı (wagmi refetch ile güncellenir)
+// totalSiteInteractions = chainNftCount + localExtra
 export function QuestProvider({
   children,
   address,
-  chainTotal = 0,
+  chainNftCount = 0,
 }: {
   children: React.ReactNode;
-  address?: string;          // Wagmi'den gelen bağlı cüzdan adresi
-  chainTotal?: number;       // NFT sayısı + isim bayrağı (zincirden)
+  address?: string;
+  chainNftCount?: number;
 }) {
-  const [sessionTotal, setSessionTotal] = useState(0);
-  const [todayCount, setTodayCount] = useState(0);
+  const [localExtra, setLocalExtra] = useState(0);
+  const [dailyCount, setDailyCount] = useState(0);
 
-  // Adres değiştiğinde (yeni cüzdan veya disconnect) state'i yenile
+  // Adres değişince (yeni cüzdan veya disconnect) ilgili localStorage'ı yükle
   useEffect(() => {
     if (!address) {
-      // Cüzdan bağlantısı kesildi — sıfırla
-      setSessionTotal(0);
-      setTodayCount(0);
+      setLocalExtra(0);
+      setDailyCount(0);
       return;
     }
-    // Yeni cüzdanın bugünkü verisini yükle
-    setSessionTotal(0);
-    setTodayCount(readToday(address));
+    setLocalExtra(readNum(extraKey(address)));
+    setDailyCount(readNum(dailyKey(address)));
   }, [address]);
 
-  const increment = useCallback(() => {
+  // GMGM veya İsim Görevi: ekstra + günlük artır
+  const incrementOffChain = useCallback(() => {
     if (!address) return;
-    setSessionTotal((p) => p + 1);
-    setTodayCount((p) => {
-      const next = p + 1;
-      writeToday(address, next);
+    setLocalExtra((prev) => {
+      const next = prev + 1;
+      writeNum(extraKey(address), next);
+      return next;
+    });
+    setDailyCount((prev) => {
+      const next = prev + 1;
+      writeNum(dailyKey(address), next);
+      return next;
+    });
+  }, [address]);
+
+  // NFT Mint: sadece günlük artır (toplam zincirden okunur)
+  const incrementOnChain = useCallback(() => {
+    if (!address) return;
+    setDailyCount((prev) => {
+      const next = prev + 1;
+      writeNum(dailyKey(address), next);
       return next;
     });
   }, [address]);
 
   const value = useMemo<QuestStats>(
     () => ({
-      totalSiteInteractions: Math.max(chainTotal, sessionTotal),
-      todaySiteInteractions: todayCount,
-      increment,
+      totalSiteInteractions: chainNftCount + localExtra,
+      todaySiteInteractions: dailyCount,
+      incrementOffChain,
+      incrementOnChain,
     }),
-    [chainTotal, sessionTotal, todayCount, increment]
+    [chainNftCount, localExtra, dailyCount, incrementOffChain, incrementOnChain]
   );
 
   return <QuestContext.Provider value={value}>{children}</QuestContext.Provider>;
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 export function useQuestStats(): QuestStats {
   return useContext(QuestContext);
 }

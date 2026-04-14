@@ -83,7 +83,7 @@ function FaucetPanel() {
 function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const [name, setName] = useState("");
   const { isConnected } = useAccount();
-  const { increment } = useQuestStats();
+  const { incrementOffChain } = useQuestStats();
   const lastHandledHash = useRef<string | undefined>(undefined);
   const {
     deployContract,
@@ -104,9 +104,9 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
       lastHandledHash.current = txHash;
       console.log("Görev Başarılı: Arc İsmi Al, Sayaç Artırıldı", txHash);
       onSuccess?.();
-      increment();
+      incrementOffChain();
     }
-  }, [isSuccess, txHash, onSuccess, increment]);
+  }, [isSuccess, txHash, onSuccess, incrementOffChain]);
 
   const handleRegister = () => {
     deployContract({ abi: ARC_QUEST_ABI, bytecode: ARC_QUEST_BYTECODE });
@@ -199,7 +199,7 @@ function NftMintPanel({
   balance?: number;
   onMintSuccess?: () => void;
 }) {
-  const { increment } = useQuestStats();
+  const { incrementOnChain } = useQuestStats();
   const lastHandledHash = useRef<string | undefined>(undefined);
   const {
     writeContract,
@@ -216,9 +216,9 @@ function NftMintPanel({
       lastHandledHash.current = txHash;
       console.log("Görev Başarılı: NFT Mint Et, Sayaç Artırıldı", txHash);
       onMintSuccess?.();
-      increment();
+      incrementOnChain();
     }
-  }, [isSuccess, txHash, onMintSuccess, increment]);
+  }, [isSuccess, txHash, onMintSuccess, incrementOnChain]);
 
   const handleMint = () => {
     writeContract({
@@ -283,7 +283,7 @@ function NftMintPanel({
 // ─── Task 5 ─ zincire mesaj ───────────────────────────────────────────────────
 function GmGmPanel() {
   const [message, setMessage] = useState("gm arc fam");
-  const { increment } = useQuestStats();
+  const { incrementOffChain } = useQuestStats();
   const lastHandledHash = useRef<string | undefined>(undefined);
   const {
     sendTransaction,
@@ -299,9 +299,9 @@ function GmGmPanel() {
     if (isSuccess && txHash && lastHandledHash.current !== txHash) {
       lastHandledHash.current = txHash;
       console.log("Görev Başarılı: GMGM Gönder, Sayaç Artırıldı", txHash);
-      increment();
+      incrementOffChain();
     }
-  }, [isSuccess, txHash, increment]);
+  }, [isSuccess, txHash, incrementOffChain]);
 
   const handleSend = () => {
     sendTransaction({ to: undefined, data: toHex(message) });
@@ -426,7 +426,7 @@ export default function Home() {
   const nftBalance = rawBalance !== undefined ? Number(rawBalance) : undefined;
 
   // Zincirden başlangıç değeri: NFT sayısı + isim bayrağı
-  const chainTotal = (nftBalance ?? 0) + (userName ? 1 : 0);
+  const chainNftCount = nftBalance ?? 0;
 
   const greeting = !isConnected
     ? "Lütfen Cüzdanınızı Bağlayın"
@@ -446,7 +446,7 @@ export default function Home() {
   };
 
   return (
-    <QuestProvider address={address} chainTotal={chainTotal}>
+    <QuestProvider address={address} chainNftCount={chainNftCount}>
       <div className="min-h-screen bg-zinc-950 text-zinc-50 flex flex-col">
         {/* Header */}
         <header className="border-b border-zinc-800/60 px-6 py-4">
