@@ -370,7 +370,7 @@ function QuestStatsPanel() {
   return (
     <div className="grid grid-cols-2 gap-4 mb-8">
       {/* Toplam İşlem */}
-      <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-[#1a1f35]/60 to-[#0B0F1A]/40 backdrop-blur-md px-5 py-5 flex flex-col gap-2">
+      <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-[#1a1f35] to-[#0B0F1A] backdrop-blur-md px-5 py-5 flex flex-col gap-2">
         <span className="text-[10px] font-semibold tracking-[0.2em] text-indigo-400/70 uppercase">
           Toplam İşlem
         </span>
@@ -379,7 +379,7 @@ function QuestStatsPanel() {
         </span>
       </div>
       {/* Bugünkü İşlem */}
-      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-[#0f1e2e]/60 to-[#0B0F1A]/40 backdrop-blur-md px-5 py-5 flex flex-col gap-2">
+      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-[#0f1e2e] to-[#0B0F1A] backdrop-blur-md px-5 py-5 flex flex-col gap-2">
         <span className="text-[10px] font-semibold tracking-[0.2em] text-cyan-400/70 uppercase">
           Bugünkü İşlem
         </span>
@@ -453,18 +453,11 @@ export default function Home() {
       {/* Hologram canvas — tüm içeriğin arkasında */}
       <HologramBackground />
 
-      {/* FERSAH filigranı — hologramın hemen üzerinde, kartların altında */}
-      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none select-none">
-        <span className="text-[15vw] font-black tracking-[1em] text-white/[0.025] uppercase">
-          FERSAH
-        </span>
-      </div>
-
-      {/* Sayfa kapsayıcısı — saydam, hologram + filigran üzerinde */}
-      <div className="relative z-10 min-h-screen bg-transparent text-white flex flex-col">
+      {/* Sayfa kapsayıcısı — koyu tema, hologram üzerinde */}
+      <div className="relative z-10 min-h-screen bg-[#0B0F1A] text-white flex flex-col">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
-        <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/60 backdrop-blur-md px-6 py-4">
+        <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
@@ -506,8 +499,8 @@ export default function Home() {
                   key={id}
                   className={`rounded-2xl border backdrop-blur-md transition-all duration-300
                     ${isOpen
-                      ? "border-[#6C5CE7]/50 bg-[#131B2F]/60 shadow-[0_0_28px_rgba(108,92,231,0.18)] -translate-y-0.5"
-                      : "border-white/8 bg-[#131B2F]/40 hover:-translate-y-1 hover:border-indigo-400/30 hover:shadow-[0_0_20px_rgba(108,92,231,0.12)]"
+                      ? "border-[#6C5CE7]/50 bg-[#131B2F]/90 shadow-[0_0_28px_rgba(108,92,231,0.18)] -translate-y-0.5"
+                      : "border-indigo-500/10 bg-[#131B2F]/70 hover:-translate-y-1 hover:border-indigo-400/30 hover:shadow-[0_0_20px_rgba(108,92,231,0.12)]"
                     }`}
                 >
                   {/* Açık kart üst çizgisi */}

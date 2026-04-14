@@ -9,14 +9,14 @@ const SEG_W = 2;           // Kapsül genişliği (px)
 const SEG_H = 18;          // Kapsül yüksekliği (px)
 const SEG_R = 1;           // Köşe yuvarlaklığı
 
-const HOVER_RADIUS = 180;  // Farenin etki alanı (px)
-const ACTIVATE_SPEED = 0.14; // Her frame ne kadar hızlı yanar
-const FADE_SPEED = 0.014;    // Her frame ne kadar yavaş söner
+const HOVER_RADIUS = 140;  // Farenin etki alanı (px)
+const ACTIVATE_SPEED = 0.18; // Her frame ne kadar hızlı yanar
+const FADE_SPEED = 0.018;    // Her frame ne kadar yavaş söner (~55 frame ≈ 0.92s @ 60fps)
 
 // Varsayılan opaklık (neredeyse görünmez)
-const OPACITY_MIN = 0.03;
-// Saf beyaz
-const R = 255, G = 255, B = 255;
+const OPACITY_MIN = 0.055;
+// Arc brand rengi: indigo/violet
+const R = 99, G = 102, B = 241;
 
 // ─── Tip ─────────────────────────────────────────────────────────────────────
 interface Capsule {
@@ -85,7 +85,7 @@ export function HologramBackground() {
 
         if (cap.brightness < 0.001) continue; // görünmez kapsülleri atla
 
-        const opacity = OPACITY_MIN + cap.brightness * (0.55 - OPACITY_MIN);
+        const opacity = OPACITY_MIN + cap.brightness * (1 - OPACITY_MIN);
 
         ctx!.beginPath();
         ctx!.fillStyle = `rgba(${R},${G},${B},${opacity.toFixed(4)})`;
