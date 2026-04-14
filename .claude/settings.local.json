@@ -14,7 +14,8 @@
       "Bash(node -e \"console.log\\(require\\('./node_modules/wagmi/package.json'\\).version\\)\")",
       "Bash(npx tsc:*)",
       "Bash(npx --yes solc --version)",
-      "Bash(npx solc:*)"
+      "Bash(npx solc:*)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }
