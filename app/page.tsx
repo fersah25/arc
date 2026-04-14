@@ -467,7 +467,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-zinc-800/60 px-6 py-4">
         <div className="max-w-2xl mx-auto text-xs text-zinc-700 text-center">
-          Arc Testnet — Chain ID 573
+          Arc Network Testnet — Chain ID 5042002
         </div>
       </footer>
     </div>

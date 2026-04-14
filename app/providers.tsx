@@ -8,15 +8,19 @@ import { defineChain } from "viem";
 import "@rainbow-me/rainbowkit/styles.css";
 
 export const arcTestnet = defineChain({
-  id: 573,
-  name: "Arc Testnet",
+  id: 5042002,
+  name: "Arc Network Testnet",
   nativeCurrency: {
-    name: "ARC",
-    symbol: "ARC",
+    name: "USDC",
+    symbol: "USDC",
     decimals: 18,
   },
   rpcUrls: {
     default: { http: ["https://rpc.testnet.arc.network"] },
+    public: { http: ["https://rpc.testnet.arc.network"] },
+  },
+  blockExplorers: {
+    default: { name: "ArcScan", url: "https://testnet.arcscan.app" },
   },
   testnet: true,
 });
