@@ -28,7 +28,7 @@ const NAME_REGISTRY_ABI = [
 ] as const;
 
 const NFT_CONTRACT_ADDRESS =
-  "0xaC6c66B9BE4e7610A2D74Dc9025d3fa676981A5B" as `0x${string}`;
+  "0xEe4AB577E9D706819c96E888623ce5a5fb2E8F47" as `0x${string}`;
 
 const NFT_MINT_ABI = [
   {
@@ -39,8 +39,8 @@ const NFT_MINT_ABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "owner", type: "address" }],
-    name: "balanceOf",
+    inputs: [{ internalType: "address", name: "_user", type: "address" }],
+    name: "getUserMintCount",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
@@ -381,11 +381,11 @@ export default function Home() {
     query: { enabled: !!address },
   });
 
-  // Sorgu B — NFT bakiyesi
+  // Sorgu B — NFT mint sayısı (zincirden)
   const { data: rawBalance, refetch: refetchBalance } = useReadContract({
     address: NFT_CONTRACT_ADDRESS,
     abi: NFT_MINT_ABI,
-    functionName: "balanceOf",
+    functionName: "getUserMintCount",
     args: address ? [address] : undefined,
     query: { enabled: !!address },
   });
