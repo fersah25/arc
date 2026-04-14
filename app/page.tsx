@@ -450,106 +450,110 @@ export default function Home() {
 
   return (
     <QuestProvider address={address} chainNftCount={chainNftCount}>
-      {/* Hologram canvas — tüm içeriğin arkasında */}
-      <HologramBackground />
+      {/* 1. EN ARKA: Simsiyah zemin */}
+      <div className="relative min-h-screen bg-[#0B0F1A] overflow-hidden">
 
-      {/* FERSAH filigranı */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
-        <span className="text-[12vw] font-black text-white/[0.02] tracking-[1em] select-none">
-          FERSAH
-        </span>
-      </div>
+        {/* 2. HOLOGRAM: Siyahın üstünde, içeriğin altında (z-[1]) */}
+        <HologramBackground />
 
-      {/* Sayfa kapsayıcısı — koyu tema, hologram üzerinde */}
-      <div className="relative z-10 min-h-screen bg-[#0B0F1A] text-white flex flex-col">
+        {/* 3. FERSAH YAZISI: Hologramla beraber arkada (z-[2]) */}
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[2]">
+          <span className="text-[12vw] font-black text-white/[0.02] tracking-[1em] select-none">
+            FERSAH
+          </span>
+        </div>
 
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
-          <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
-              <span className="text-sm font-semibold tracking-tight text-white">
-                Arc Quest Dashboard
-              </span>
+        {/* 4. ASIL İÇERİK: Saydam ve en üstte (z-10) */}
+        <div className="relative z-10 bg-transparent text-white flex flex-col min-h-screen">
+
+          {/* ── Header ─────────────────────────────────────────────────────── */}
+          <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
+            <div className="max-w-2xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
+                <span className="text-sm font-semibold tracking-tight text-white">
+                  Arc Quest Dashboard
+                </span>
+              </div>
+              <ConnectButton showBalance={false} />
             </div>
-            <ConnectButton showBalance={false} />
-          </div>
-        </header>
+          </header>
 
-        {/* ── Main ───────────────────────────────────────────────────────── */}
-        <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
+          {/* ── Main ───────────────────────────────────────────────────────── */}
+          <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
 
-          {/* Karşılama + Başlık */}
-          <div className="mb-10">
-            <p className={`text-[11px] font-semibold tracking-[0.22em] uppercase mb-2 ${
-              !isConnected ? "text-white/20" : "text-[#6C5CE7]"
-            }`}>
-              {greeting}
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-[#6C5CE7] bg-clip-text text-transparent leading-tight">
-              Arc Testnet Görevleri
-            </h1>
-            <p className="text-sm text-zinc-500 mt-2 mb-8">
-              Görevleri tamamla, ağla etkileşime gir.
-            </p>
+            {/* Karşılama + Başlık */}
+            <div className="mb-10">
+              <p className={`text-[11px] font-semibold tracking-[0.22em] uppercase mb-2 ${
+                !isConnected ? "text-white/20" : "text-[#6C5CE7]"
+              }`}>
+                {greeting}
+              </p>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-[#6C5CE7] bg-clip-text text-transparent leading-tight">
+                Arc Testnet Görevleri
+              </h1>
+              <p className="text-sm text-zinc-500 mt-2 mb-8">
+                Görevleri tamamla, ağla etkileşime gir.
+              </p>
 
-            {/* İstatistik kartları */}
-            <QuestStatsPanel />
-          </div>
+              {/* İstatistik kartları */}
+              <QuestStatsPanel />
+            </div>
 
-          {/* ── Accordion ──────────────────────────────────────────────── */}
-          <div className="flex flex-col gap-3">
-            {TASKS.map(({ id, label }) => {
-              const isOpen = openTask === id;
-              return (
-                <div
-                  key={id}
-                  className={`rounded-2xl border backdrop-blur-md transition-all duration-300
-                    ${isOpen
-                      ? "border-[#6C5CE7]/50 bg-[#131B2F]/90 shadow-[0_0_28px_rgba(108,92,231,0.18)] -translate-y-0.5"
-                      : "border-indigo-500/10 bg-[#131B2F]/70 hover:-translate-y-1 hover:border-indigo-400/30 hover:shadow-[0_0_20px_rgba(108,92,231,0.12)]"
-                    }`}
-                >
-                  {/* Açık kart üst çizgisi */}
-                  {isOpen && (
-                    <div className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r from-transparent via-[#6C5CE7] to-transparent" />
-                  )}
-
-                  {/* Başlık butonu */}
-                  <button
-                    onClick={() => toggle(id)}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left"
+            {/* ── Accordion ──────────────────────────────────────────────── */}
+            <div className="flex flex-col gap-3">
+              {TASKS.map(({ id, label }) => {
+                const isOpen = openTask === id;
+                return (
+                  <div
+                    key={id}
+                    className={`rounded-2xl border backdrop-blur-md transition-all duration-300
+                      ${isOpen
+                        ? "border-[#6C5CE7]/50 bg-[#131B2F]/90 shadow-[0_0_28px_rgba(108,92,231,0.18)] -translate-y-0.5"
+                        : "border-indigo-500/10 bg-[#131B2F]/70 hover:-translate-y-1 hover:border-indigo-400/30 hover:shadow-[0_0_20px_rgba(108,92,231,0.12)]"
+                      }`}
                   >
-                    <span className={`text-sm font-semibold transition-colors duration-200 ${
-                      isOpen ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
-                    }`}>
-                      {label}
-                    </span>
-                    <span className={`text-base transition-all duration-300 ${
-                      isOpen ? "rotate-180 text-[#6C5CE7]" : "text-white/20"
-                    }`}>
-                      ▾
-                    </span>
-                  </button>
+                    {/* Açık kart üst çizgisi */}
+                    {isOpen && (
+                      <div className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r from-transparent via-[#6C5CE7] to-transparent" />
+                    )}
 
-                  {/* Panel içeriği */}
-                  <div className={`overflow-hidden transition-all duration-300 ${
-                    isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-                  }`}>
-                    <div className="px-5 pb-6">{taskPanels[id]}</div>
+                    {/* Başlık butonu */}
+                    <button
+                      onClick={() => toggle(id)}
+                      className="w-full flex items-center justify-between px-5 py-4 text-left"
+                    >
+                      <span className={`text-sm font-semibold transition-colors duration-200 ${
+                        isOpen ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                      }`}>
+                        {label}
+                      </span>
+                      <span className={`text-base transition-all duration-300 ${
+                        isOpen ? "rotate-180 text-[#6C5CE7]" : "text-white/20"
+                      }`}>
+                        ▾
+                      </span>
+                    </button>
+
+                    {/* Panel içeriği */}
+                    <div className={`overflow-hidden transition-all duration-300 ${
+                      isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+                    }`}>
+                      <div className="px-5 pb-6">{taskPanels[id]}</div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </main>
+                );
+              })}
+            </div>
+          </main>
 
-        {/* ── Footer ─────────────────────────────────────────────────────── */}
-        <footer className="border-t border-white/5 px-6 py-4">
-          <div className="max-w-2xl mx-auto text-[11px] text-white/15 text-center tracking-widest uppercase">
-            Arc Network Testnet · Chain ID 5042002
-          </div>
-        </footer>
+          {/* ── Footer ─────────────────────────────────────────────────────── */}
+          <footer className="border-t border-white/5 px-6 py-4">
+            <div className="max-w-2xl mx-auto text-[11px] text-white/15 text-center tracking-widest uppercase">
+              Arc Network Testnet · Chain ID 5042002
+            </div>
+          </footer>
+        </div>
       </div>
     </QuestProvider>
   );
