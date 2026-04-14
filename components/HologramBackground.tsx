@@ -15,8 +15,8 @@ const FADE_SPEED = 0.018;    // Her frame ne kadar yavaş söner (~55 frame ≈ 
 
 // Varsayılan opaklık (neredeyse görünmez)
 const OPACITY_MIN = 0.055;
-// Arc brand rengi: indigo/violet
-const R = 99, G = 102, B = 241;
+// Saf beyaz
+const R = 255, G = 255, B = 255;
 
 // ─── Tip ─────────────────────────────────────────────────────────────────────
 interface Capsule {

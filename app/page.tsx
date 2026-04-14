@@ -453,6 +453,13 @@ export default function Home() {
       {/* Hologram canvas — tüm içeriğin arkasında */}
       <HologramBackground />
 
+      {/* FERSAH filigranı */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+        <span className="text-[12vw] font-black text-white/[0.02] tracking-[1em] select-none">
+          FERSAH
+        </span>
+      </div>
+
       {/* Sayfa kapsayıcısı — koyu tema, hologram üzerinde */}
       <div className="relative z-10 min-h-screen bg-[#0B0F1A] text-white flex flex-col">
 
