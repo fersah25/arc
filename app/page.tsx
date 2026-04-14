@@ -403,7 +403,7 @@ const TASKS: { id: TaskId; label: string }[] = [
 // ─── Ana sayfa ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAccount(); 
 
   // Sorgu A — isim kaydı
   const { data: resolvedName, refetch: refetchName } = useReadContract({
@@ -448,20 +448,27 @@ export default function Home() {
 
   return (
     <QuestProvider address={address} chainNftCount={chainNftCount}>
+      
+      {/* 1. EKLENEN KOD: Hologramı buraya koyduk */}
       <HologramBackground />
-      <div className="min-h-screen bg-zinc-950 text-zinc-50 flex flex-col">
-        {/* Header */}
+      
+      {/* 2. DEĞİŞEN KOD: Senin bg-zinc-950 olan beton duvarı, bg-transparent yapıp cam haline getirdik ve relative z-10 ekledik */}
+      <div className="relative z-10 min-h-screen bg-transparent text-zinc-50 flex flex-col">
+        
+        {/* Header - BUNDAN SONRASINA ASLA DOKUNMUYORSUN, SENİN KENDİ KODLARIN AYNI KALIYOR */} 
         <header className="border-b border-zinc-800/60 px-6 py-4">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.8)]" />
-              <span className="text-sm font-semibold tracking-tight text-zinc-100">
+              <span className="text-sm font-semibold tracking-tight text-zinc-100"> 
                 Arc Quest Dashboard
               </span>
             </div>
             <ConnectButton showBalance={false} />
           </div>
         </header>
+
+        {/* ... Sitenin geri kalanı, görevler, footer vs. aynen kendi halinde devam ediyor ... */}
 
         {/* Main */}
         <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
@@ -488,7 +495,7 @@ export default function Home() {
             {TASKS.map(({ id, label }) => {
               const isOpen = openTask === id;
               return (
-                <div
+                <div 
                   key={id}
                   className={`rounded-xl border transition-all duration-300 ${
                     isOpen
