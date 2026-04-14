@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   useDeployContract,
@@ -84,6 +84,7 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const [name, setName] = useState("");
   const { isConnected } = useAccount();
   const { increment } = useQuestStats();
+  const didIncrement = useRef(false);
   const {
     deployContract,
     data: txHash,
@@ -99,10 +100,12 @@ function NameRegisterPanel({ onSuccess }: { onSuccess?: () => void }) {
   const contractAddress = receipt?.contractAddress;
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !didIncrement.current) {
+      didIncrement.current = true;
       onSuccess?.();
       increment();
     }
+    if (!isSuccess) didIncrement.current = false;
   }, [isSuccess, onSuccess, increment]);
 
   const handleRegister = () => {
@@ -197,6 +200,7 @@ function NftMintPanel({
   onMintSuccess?: () => void;
 }) {
   const { increment } = useQuestStats();
+  const didIncrement = useRef(false);
   const {
     writeContract,
     data: txHash,
@@ -208,10 +212,12 @@ function NftMintPanel({
   });
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !didIncrement.current) {
+      didIncrement.current = true;
       onMintSuccess?.();
       increment();
     }
+    if (!isSuccess) didIncrement.current = false;
   }, [isSuccess, onMintSuccess, increment]);
 
   const handleMint = () => {
@@ -278,6 +284,7 @@ function NftMintPanel({
 function GmGmPanel() {
   const [message, setMessage] = useState("gm arc fam");
   const { increment } = useQuestStats();
+  const didIncrement = useRef(false);
   const {
     sendTransaction,
     data: txHash,
@@ -289,7 +296,11 @@ function GmGmPanel() {
   });
 
   useEffect(() => {
-    if (isSuccess) increment();
+    if (isSuccess && !didIncrement.current) {
+      didIncrement.current = true;
+      increment();
+    }
+    if (!isSuccess) didIncrement.current = false;
   }, [isSuccess, increment]);
 
   const handleSend = () => {
@@ -435,7 +446,7 @@ export default function Home() {
   };
 
   return (
-    <QuestProvider chainTotal={chainTotal}>
+    <QuestProvider address={address} chainTotal={chainTotal}>
       <div className="min-h-screen bg-zinc-950 text-zinc-50 flex flex-col">
         {/* Header */}
         <header className="border-b border-zinc-800/60 px-6 py-4">

@@ -23,63 +23,68 @@ const QuestContext = createContext<QuestStats>({
   increment: () => {},
 });
 
-// ─── localStorage yardımcıları ────────────────────────────────────────────────
-const LS_KEY = "arc_quest_today";
-
+// ─── localStorage yardımcıları (adrese özel) ──────────────────────────────────
 function todayStr(): string {
-  return new Date().toISOString().slice(0, 10); // "2026-04-14"
+  return new Date().toISOString().slice(0, 10);
 }
 
-function readToday(): number {
-  if (typeof window === "undefined") return 0;
+function lsKey(address: string): string {
+  return `arc_quest_daily_${address.toLowerCase()}_${todayStr()}`;
+}
+
+function readToday(address: string): number {
+  if (typeof window === "undefined" || !address) return 0;
   try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return 0;
-    const { date, count } = JSON.parse(raw) as { date: string; count: number };
-    // Gün değiştiyse sıfırla
-    return date === todayStr() ? count : 0;
+    const raw = localStorage.getItem(lsKey(address));
+    return raw ? (JSON.parse(raw) as number) : 0;
   } catch {
     return 0;
   }
 }
 
-function writeToday(count: number): void {
-  localStorage.setItem(LS_KEY, JSON.stringify({ date: todayStr(), count }));
+function writeToday(address: string, count: number): void {
+  if (!address) return;
+  localStorage.setItem(lsKey(address), JSON.stringify(count));
 }
 
 // ─── Provider ────────────────────────────────────────────────────────────────
-// chainTotal: Home'dan gelen zincir verisi (NFT sayısı + isim bayrağı)
-// totalSiteInteractions = max(chainTotal, sessionTotal)
-//   - Kullanıcı yeni oturumda cüzdanı bağlarsa zincir değerini gösterir.
-//   - Bu oturumda yaptığı ekstra GM gönderimleri de eklenir.
 export function QuestProvider({
   children,
+  address,
   chainTotal = 0,
 }: {
   children: React.ReactNode;
-  chainTotal?: number;
+  address?: string;          // Wagmi'den gelen bağlı cüzdan adresi
+  chainTotal?: number;       // NFT sayısı + isim bayrağı (zincirden)
 }) {
   const [sessionTotal, setSessionTotal] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
 
-  // Client-only: localStorage'ı hydrate et
+  // Adres değiştiğinde (yeni cüzdan veya disconnect) state'i yenile
   useEffect(() => {
-    setTodayCount(readToday());
-  }, []);
+    if (!address) {
+      // Cüzdan bağlantısı kesildi — sıfırla
+      setSessionTotal(0);
+      setTodayCount(0);
+      return;
+    }
+    // Yeni cüzdanın bugünkü verisini yükle
+    setSessionTotal(0);
+    setTodayCount(readToday(address));
+  }, [address]);
 
   const increment = useCallback(() => {
+    if (!address) return;
     setSessionTotal((p) => p + 1);
     setTodayCount((p) => {
       const next = p + 1;
-      writeToday(next);
+      writeToday(address, next);
       return next;
     });
-  }, []);
+  }, [address]);
 
   const value = useMemo<QuestStats>(
     () => ({
-      // Zincir değeri > session değerinden büyükse (eski işlemler) onu göster;
-      // GM gibi zincirde görünmeyen işlemler sessionTotal'ı yükseltir.
       totalSiteInteractions: Math.max(chainTotal, sessionTotal),
       todaySiteInteractions: todayCount,
       increment,
