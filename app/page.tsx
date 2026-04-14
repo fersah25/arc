@@ -368,20 +368,22 @@ function GmGmPanel() {
 function QuestStatsPanel() {
   const { totalSiteInteractions, todaySiteInteractions } = useQuestStats();
   return (
-    <div className="grid grid-cols-2 gap-3 mb-8">
-      <div className="rounded-xl border border-zinc-800/50 bg-[#0a0a14] px-5 py-4 flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium tracking-widest text-zinc-600 uppercase">
+    <div className="grid grid-cols-2 gap-4 mb-8">
+      {/* Toplam İşlem */}
+      <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-[#1a1f35] to-[#0B0F1A] backdrop-blur-md px-5 py-5 flex flex-col gap-2">
+        <span className="text-[10px] font-semibold tracking-[0.2em] text-indigo-400/70 uppercase">
           Toplam İşlem
         </span>
-        <span className="text-4xl font-bold tracking-tight text-indigo-300 tabular-nums">
+        <span className="text-5xl font-bold tabular-nums text-white drop-shadow-[0_0_12px_rgba(108,92,231,0.7)]">
           {totalSiteInteractions}
         </span>
       </div>
-      <div className="rounded-xl border border-violet-900/40 bg-[#0d0a1e] px-5 py-4 flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium tracking-widest text-violet-600 uppercase">
+      {/* Bugünkü İşlem */}
+      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-[#0f1e2e] to-[#0B0F1A] backdrop-blur-md px-5 py-5 flex flex-col gap-2">
+        <span className="text-[10px] font-semibold tracking-[0.2em] text-cyan-400/70 uppercase">
           Bugünkü İşlem
         </span>
-        <span className="text-4xl font-bold tracking-tight text-violet-300 tabular-nums">
+        <span className="text-5xl font-bold tabular-nums text-white drop-shadow-[0_0_12px_rgba(0,209,255,0.6)]">
           {todaySiteInteractions}
         </span>
       </div>
@@ -448,19 +450,18 @@ export default function Home() {
 
   return (
     <QuestProvider address={address} chainNftCount={chainNftCount}>
-      
-      {/* 1. EKLENEN KOD: Hologramı buraya koyduk */}
+      {/* Hologram canvas — tüm içeriğin arkasında */}
       <HologramBackground />
-      
-      {/* 2. DEĞİŞEN KOD: Senin bg-zinc-950 olan beton duvarı, bg-transparent yapıp cam haline getirdik ve relative z-10 ekledik */}
-      <div className="relative z-10 min-h-screen bg-transparent text-zinc-50 flex flex-col">
-        
-        {/* Header - BUNDAN SONRASINA ASLA DOKUNMUYORSUN, SENİN KENDİ KODLARIN AYNI KALIYOR */} 
-        <header className="border-b border-zinc-800/60 px-6 py-4">
+
+      {/* Sayfa kapsayıcısı — koyu tema, hologram üzerinde */}
+      <div className="relative z-10 min-h-screen bg-[#0B0F1A] text-white flex flex-col">
+
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+        <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.8)]" />
-              <span className="text-sm font-semibold tracking-tight text-zinc-100"> 
+            <div className="flex items-center gap-2.5">
+              <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
+              <span className="text-sm font-semibold tracking-tight text-white">
                 Arc Quest Dashboard
               </span>
             </div>
@@ -468,55 +469,67 @@ export default function Home() {
           </div>
         </header>
 
-        {/* ... Sitenin geri kalanı, görevler, footer vs. aynen kendi halinde devam ediyor ... */}
-
-        {/* Main */}
+        {/* ── Main ───────────────────────────────────────────────────────── */}
         <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
-          <div className="mb-8">
-            {/* Karşılama */}
-            <p className={`text-xs font-medium tracking-widest uppercase mb-3 ${
-              !isConnected ? "text-zinc-600" : "text-indigo-400"
+
+          {/* Karşılama + Başlık */}
+          <div className="mb-10">
+            <p className={`text-[11px] font-semibold tracking-[0.22em] uppercase mb-2 ${
+              !isConnected ? "text-white/20" : "text-[#6C5CE7]"
             }`}>
               {greeting}
             </p>
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-300 via-violet-300 to-zinc-200 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-[#6C5CE7] bg-clip-text text-transparent leading-tight">
               Arc Testnet Görevleri
             </h1>
-            <p className="text-sm text-zinc-500 mt-1 mb-6">
+            <p className="text-sm text-zinc-500 mt-2 mb-8">
               Görevleri tamamla, ağla etkileşime gir.
             </p>
 
-            {/* İstatistik paneli */}
+            {/* İstatistik kartları */}
             <QuestStatsPanel />
           </div>
 
-          {/* Accordion */}
+          {/* ── Accordion ──────────────────────────────────────────────── */}
           <div className="flex flex-col gap-3">
             {TASKS.map(({ id, label }) => {
               const isOpen = openTask === id;
               return (
-                <div 
+                <div
                   key={id}
-                  className={`rounded-xl border transition-all duration-300 ${
-                    isOpen
-                      ? "border-indigo-700/50 bg-[#0d0d1a] shadow-[0_0_24px_rgba(99,102,241,0.12)]"
-                      : "border-zinc-800/70 bg-[#0a0a14] hover:border-zinc-700/60 hover:shadow-[0_0_12px_rgba(99,102,241,0.07)]"
-                  }`}
+                  className={`rounded-2xl border backdrop-blur-md transition-all duration-300
+                    ${isOpen
+                      ? "border-[#6C5CE7]/50 bg-[#131B2F]/90 shadow-[0_0_28px_rgba(108,92,231,0.18)] -translate-y-0.5"
+                      : "border-indigo-500/10 bg-[#131B2F]/70 hover:-translate-y-1 hover:border-indigo-400/30 hover:shadow-[0_0_20px_rgba(108,92,231,0.12)]"
+                    }`}
                 >
+                  {/* Açık kart üst çizgisi */}
+                  {isOpen && (
+                    <div className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r from-transparent via-[#6C5CE7] to-transparent" />
+                  )}
+
+                  {/* Başlık butonu */}
                   <button
                     onClick={() => toggle(id)}
                     className="w-full flex items-center justify-between px-5 py-4 text-left"
                   >
-                    <span className={`text-sm font-semibold transition-colors duration-200 ${isOpen ? "text-indigo-300" : "text-zinc-300"}`}>
+                    <span className={`text-sm font-semibold transition-colors duration-200 ${
+                      isOpen ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                    }`}>
                       {label}
                     </span>
-                    <span className={`text-zinc-500 transition-transform duration-300 ${isOpen ? "rotate-180 text-indigo-400" : ""}`}>
+                    <span className={`text-base transition-all duration-300 ${
+                      isOpen ? "rotate-180 text-[#6C5CE7]" : "text-white/20"
+                    }`}>
                       ▾
                     </span>
                   </button>
 
-                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
-                    <div className="px-5 pb-5">{taskPanels[id]}</div>
+                  {/* Panel içeriği */}
+                  <div className={`overflow-hidden transition-all duration-300 ${
+                    isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+                  }`}>
+                    <div className="px-5 pb-6">{taskPanels[id]}</div>
                   </div>
                 </div>
               );
@@ -524,10 +537,10 @@ export default function Home() {
           </div>
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-zinc-800/60 px-6 py-4">
-          <div className="max-w-2xl mx-auto text-xs text-zinc-700 text-center">
-            Arc Network Testnet — Chain ID 5042002
+        {/* ── Footer ─────────────────────────────────────────────────────── */}
+        <footer className="border-t border-white/5 px-6 py-4">
+          <div className="max-w-2xl mx-auto text-[11px] text-white/15 text-center tracking-widest uppercase">
+            Arc Network Testnet · Chain ID 5042002
           </div>
         </footer>
       </div>
