@@ -405,7 +405,21 @@ const TASKS: { id: TaskId; label: string }[] = [
 // ─── Ana sayfa ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
-  const { address, isConnected } = useAccount(); 
+  const { address, isConnected } = useAccount();
+  const watermarkRef = useRef<HTMLDivElement>(null);
+
+  // Mouse pozisyonuna göre FERSAH maskesini güncelle
+  useEffect(() => {
+    const el = watermarkRef.current;
+    if (!el) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      const mask = `radial-gradient(circle 200px at ${e.clientX}px ${e.clientY}px, black 0%, transparent 100%)`;
+      el.style.webkitMaskImage = mask;
+      el.style.maskImage = mask;
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   // Sorgu A — isim kaydı
   const { data: resolvedName, refetch: refetchName } = useReadContract({
@@ -457,8 +471,12 @@ export default function Home() {
         <HologramBackground />
 
         {/* 3. FERSAH YAZISI: Hologramla beraber arkada (z-[2]) */}
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[2]">
-          <span className="text-[12vw] font-black tracking-[1em] select-none opacity-0 hover:opacity-[0.03] transition-opacity duration-1000 ease-in-out pointer-events-auto text-white cursor-default">
+        <div
+          ref={watermarkRef}
+          className="fixed inset-0 flex items-center justify-center pointer-events-none z-[2]"
+          style={{ maskImage: "radial-gradient(circle 200px at -999px -999px, black 0%, transparent 100%)", WebkitMaskImage: "radial-gradient(circle 200px at -999px -999px, black 0%, transparent 100%)" }}
+        >
+          <span className="text-[12vw] font-black tracking-[1em] select-none text-white/20 cursor-default">
             FERSAH
           </span>
         </div>
