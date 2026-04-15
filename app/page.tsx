@@ -457,8 +457,8 @@ export default function Home() {
         <HologramBackground />
 
         {/* 3. FERSAH YAZISI: Hologramla beraber arkada (z-[2]) */}
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[2]">
-          <span className="text-[12vw] font-black text-white/[0.02] tracking-[1em] select-none">
+        <div className="fixed inset-0 flex items-center justify-center z-[2]">
+          <span className="text-[12vw] font-black text-white tracking-[1em] select-none pointer-events-none opacity-0 hover:opacity-[0.05] transition-opacity duration-1000 ease-in-out">
             FERSAH
           </span>
         </div>
