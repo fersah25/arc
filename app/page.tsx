@@ -476,7 +476,7 @@ export default function Home() {
           className="fixed inset-0 flex items-center justify-center pointer-events-none z-[2]"
           style={{ maskImage: "radial-gradient(circle 200px at -999px -999px, black 0%, transparent 100%)", WebkitMaskImage: "radial-gradient(circle 200px at -999px -999px, black 0%, transparent 100%)" }}
         >
-          <span className="text-[12vw] font-black tracking-[1em] select-none text-white/20 cursor-default">
+          <span className="text-[12vw] font-black tracking-[0.3em] select-none text-white/20 cursor-default">
             FERSAH
           </span>
         </div>
