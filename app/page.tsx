@@ -17,16 +17,16 @@ import { HologramBackground } from "../components/HologramBackground";
 
 // ─── Günün Sözü ──────────────────────────────────────────────────────────────
 const QUOTES = [
-  "Fersah fersah yolun başındayız, gelecek burada.",
-  "Blockchain sadece teknoloji değil, bir özgürlük manifestosudur.",
-  "Arc ağında her işlem, geleceğe atılmış bir imzadır.",
-  "Boğa piyasası sabredenlerin, ayı piyasası öğrenenlerin dostudur.",
-  "Kodun içinde adalet, zincirin içinde güven vardır.",
-  "En uzun yollar, ilk blokla başlar.",
-  "Merkeziyetsizlik bir tercih değil, zorunluluktur.",
-  "Hata yapmaktan korkma, rollback yapamayacağın tek şey zamandır.",
-  "Kendi cüzdanının efendisi ol, anahtarların senin özgürlüğündür.",
-  "Fersah'ta sınır yok, sadece keşfedilmeyi bekleyen bloklar var.",
+  "Bir poker masasında ilk yarım saatte kerizin kim olduğunu anlayamazsanız, keriz sizsiniz demektir. Kriptoda bu kerizi görebiliyor musunuz?",
+  "Çok eski bir Wall Street sözüdür: Boğalar para kazanır, ayılar para kazanır, ama açgözlü domuzlar her zaman kesilir.",
+  "Zincirlerinizi kırın: Airdrop metası geride kaldı. Herkesin izlediği yolu takip ederek yeni metaların öncüsü olamazsınız; zirveyi görmek için sürüden ayrılmalısınız.",
+  "En büyük risk, hiçbir risk almamaktır. Her şeyin tokenize edildiği bir dünyada, geride kalmak en pahalı hatadır.",
+  "Tüm kasanızı kriptoya bağlamayın; bütün yumurtalar aynı sepette taşınmaz. Altın, gümüş, borsa ve dijital bir işten gelen nakit akışıyla portföyünüzü sigortalayın. Gerçek servet, riski dağıtmaktır.",
+  "'Piyasa kötü, yapılacak bir şey yok' bahanesine sığınmayın. Her zaman öğrenecek yeni bir şey vardır. Unutmayın: En büyük kazanımlar boğanın coşkusunda değil, ayı piyasasında inşa edilir. Kendinize yatırım yapın.",
+  "Matrix filminde olduğu gibi hepimiz kırmızı hapı seçtik ve uykudan uyandık. Artık bu gerçeğin sonuçlarına katlanacağız.",
+  "Blockchain'in ilk yıllarında teknoloji devrimi konuşulurdu, bugün ise piyasa devasa bir çöplüğe dönüştü. Rastgele coin alıp mucize beklemeyi bırakın. Temeli sağlam birkaç proje dışındaki her şeye potansiyel 'scam' gözüyle bakın ve paranızı koruyun.",
+  "Başarılı olmak, hamile kalmak gibidir. Herkes sizi tebrik eder ama hamile kalmak için kaç kere sikildiğinizi kimse bilmez.",
+  "Mutlaka kârınızı realize edin. Ekranda parlayan o sayılar, bir süre sonra gözünüzde casino jetonuna dönüşür ve paranın gerçek değerini unutursunuz. Kazandığınızı realize edin; unutmayın, realize edilmemiş kâr sadece bir illüzyondur.",
 ];
 
 function QuoteModal({ onClose }: { onClose: () => void }) {
@@ -613,7 +613,7 @@ export default function Home() {
 
           {/* ── Header ─────────────────────────────────────────────────────── */}
           <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
-            <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+            <div className="max-w-2xl mx-auto flex items-center gap-4">
               {/* Logo */}
               <div className="flex items-center gap-2.5 shrink-0">
                 <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
@@ -625,14 +625,14 @@ export default function Home() {
               {/* Günün Sözü butonu */}
               <button
                 onClick={() => setQuoteOpen(true)}
-                className="flex items-center gap-1.5 rounded-xl border border-indigo-800/40 bg-indigo-950/40 px-3.5 py-1.5 text-xs font-medium text-indigo-300 tracking-wide transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_12px_rgba(108,92,231,0.2)] backdrop-blur-md"
+                className="flex items-center gap-2 rounded-xl border border-indigo-700/50 bg-indigo-950/50 px-6 py-3 text-base font-semibold text-indigo-300 tracking-wide transition-all hover:bg-indigo-900/50 hover:border-indigo-500/60 hover:text-indigo-200 hover:shadow-[0_0_18px_rgba(108,92,231,0.25)] backdrop-blur-md"
               >
                 <span>✨</span>
                 <span>Günün Sözü</span>
               </button>
 
-              {/* Cüzdan */}
-              <div className="shrink-0">
+              {/* Cüzdan — sağa yap */}
+              <div className="ml-auto shrink-0">
                 <ConnectButton showBalance={false} />
               </div>
             </div>
