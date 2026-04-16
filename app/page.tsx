@@ -34,7 +34,10 @@ const NFT_CONTRACT_ADDRESS =
 
 const NFT_MINT_ABI = [
   {
-    inputs: [],
+    inputs: [
+      { internalType: "string", name: "_name", type: "string" },
+      { internalType: "uint256", name: "_supply", type: "uint256" },
+    ],
     name: "mint",
     outputs: [],
     stateMutability: "nonpayable",
@@ -200,6 +203,8 @@ function NftMintPanel({
   balance?: number;
   onMintSuccess?: () => void;
 }) {
+  const [nftName, setNftName] = useState("");
+  const [nftSupply, setNftSupply] = useState("");
   const { incrementOnChain } = useQuestStats();
   const lastHandledHash = useRef<string | undefined>(undefined);
   const {
@@ -226,13 +231,18 @@ function NftMintPanel({
       address: NFT_CONTRACT_ADDRESS,
       abi: NFT_MINT_ABI,
       functionName: "mint",
+      args: [nftName, BigInt(nftSupply || 0)],
     });
   };
 
+  const isDisabled = isPending || isConfirming || !nftName.trim() || !nftSupply || Number(nftSupply) <= 0;
   const displayBalance = balance ?? 0;
+
+  const inputClass = "w-full rounded-xl border border-zinc-800/70 bg-transparent px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-indigo-600/60 focus:ring-1 focus:ring-indigo-600/20 transition-all";
 
   return (
     <div className="pt-4 flex flex-col gap-4">
+      {/* Mint sayacı */}
       <div className="rounded-xl border border-indigo-900/40 bg-[#0d0d1a] px-4 py-3 flex items-center justify-between">
         <span className="text-[11px] font-medium tracking-widest text-indigo-600 uppercase">
           Sizin Mint&apos;leriniz
@@ -240,6 +250,31 @@ function NftMintPanel({
         <span className={`text-2xl font-bold transition-colors duration-300 ${displayBalance > 0 ? "text-indigo-300" : "text-zinc-600"}`}>
           {displayBalance}
         </span>
+      </div>
+
+      {/* Inputlar */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-medium tracking-widest text-zinc-500 uppercase">NFT Adı</label>
+          <input
+            type="text"
+            value={nftName}
+            onChange={(e) => setNftName(e.target.value)}
+            placeholder="Arc Founders"
+            className={inputClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-medium tracking-widest text-zinc-500 uppercase">Supply</label>
+          <input
+            type="number"
+            min="1"
+            value={nftSupply}
+            onChange={(e) => setNftSupply(e.target.value)}
+            placeholder="10000"
+            className={inputClass}
+          />
+        </div>
       </div>
 
       {isSuccess && txHash && (
@@ -257,8 +292,8 @@ function NftMintPanel({
       )}
 
       <button
-        onClick={isSuccess ? () => reset() : handleMint}
-        disabled={isPending || isConfirming}
+        onClick={isSuccess ? () => { reset(); setNftName(""); setNftSupply(""); } : handleMint}
+        disabled={isDisabled}
         className="w-full rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-4 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_20px_rgba(99,102,241,0.18)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
       >
         {isPending ? (
