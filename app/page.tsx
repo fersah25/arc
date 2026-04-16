@@ -165,6 +165,68 @@ function QuoteModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ─── Nav Dropdown ────────────────────────────────────────────────────────────
+const KITAPLAR = [
+  { title: "Akıllı Yatırımcı", author: "Benjamin Graham" },
+  { title: "Zengin Baba Yoksul Baba", author: "Robert Kiyosaki & Sharon L. Lechter" },
+  { title: "Paranın Psikolojisi", author: "Morgan Housel" },
+  { title: "A'dan Z'ye Kripto Para", author: "Furkan Barış Kara" },
+  { title: "Blokzincir Kripto Paralar Bitcoin: Satoshi Dünyayı Değiştiriyor", author: "Erkin Şahinöz & Vedat Güven" },
+];
+
+const FILMLER: { title: string; author?: string }[] = [];
+
+function NavDropdown({
+  label,
+  items,
+  onEnter,
+  onLeave,
+}: {
+  label: string;
+  items: { title: string; author?: string }[];
+  onEnter: () => void;
+  onLeave: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div
+      className="relative z-[25]"
+      onMouseEnter={() => { setOpen(true); onEnter(); }}
+      onMouseLeave={() => { setOpen(false); onLeave(); }}
+    >
+      <button className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+        open ? "text-white" : "text-zinc-400 hover:text-zinc-200"
+      }`}>
+        {label}
+        <span className={`text-[10px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}>▾</span>
+      </button>
+
+      <div className={`absolute top-[calc(100%+10px)] left-0 w-72 rounded-xl border border-white/10 bg-[#0d1117]/95 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-200 origin-top ${
+        open ? "opacity-100 scale-y-100 pointer-events-auto" : "opacity-0 scale-y-95 pointer-events-none"
+      }`}>
+        {items.length === 0 ? (
+          <div className="px-4 py-6 text-center text-xs text-zinc-600 tracking-widest uppercase">Yakında...</div>
+        ) : (
+          <div className="py-1.5">
+            {items.map((item, i) => (
+              <div
+                key={i}
+                className="px-4 py-3 hover:bg-white/[0.04] transition-colors cursor-default border-b border-white/[0.04] last:border-0"
+              >
+                <p className="text-sm font-medium text-zinc-200 leading-snug">{item.title}</p>
+                {item.author && (
+                  <p className="text-[11px] text-zinc-500 mt-0.5">{item.author}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Kontrat sabitleri ────────────────────────────────────────────────────────
 const NAME_REGISTRY_ADDRESS =
   "0x0000000000000000000000000000000000000000" as `0x${string}`;
@@ -591,6 +653,7 @@ const TASKS: { id: TaskId; label: string }[] = [
 export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
   const [quoteOpen, setQuoteOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { address, isConnected } = useAccount();
   const watermarkRef = useRef<HTMLDivElement>(null);
 
@@ -667,6 +730,11 @@ export default function Home() {
           </span>
         </div>
 
+        {/* Menü overlay — header'ın altında, içeriğin üstünde */}
+        {menuOpen && (
+          <div className="fixed inset-0 bg-black/60 z-[10] pointer-events-none" />
+        )}
+
         {/* Günün Sözü Modal */}
         {quoteOpen && <QuoteModal onClose={() => setQuoteOpen(false)} />}
 
@@ -676,12 +744,26 @@ export default function Home() {
           {/* ── Header ─────────────────────────────────────────────────────── */}
           <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
             <div className="w-full flex items-center gap-4">
-              {/* Sol: Logo */}
-              <div className="flex items-center gap-2.5 shrink-0">
-                <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
-                <span className="text-sm font-semibold tracking-tight text-white">
-                  Arc Quest Dashboard
-                </span>
+              {/* Sol: Logo + Nav */}
+              <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-2.5 mr-3">
+                  <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
+                  <span className="text-sm font-semibold tracking-tight text-white">
+                    Arc Quest Dashboard
+                  </span>
+                </div>
+                <NavDropdown
+                  label="Kitaplar"
+                  items={KITAPLAR}
+                  onEnter={() => setMenuOpen(true)}
+                  onLeave={() => setMenuOpen(false)}
+                />
+                <NavDropdown
+                  label="Filmler"
+                  items={FILMLER}
+                  onEnter={() => setMenuOpen(true)}
+                  onLeave={() => setMenuOpen(false)}
+                />
               </div>
 
               {/* Orta: Günün Sözü butonu — tam merkeze */}
