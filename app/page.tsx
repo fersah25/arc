@@ -202,26 +202,29 @@ function NavDropdown({
         <span className={`text-[10px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
 
-      <div className={`absolute top-[calc(100%+10px)] left-0 w-72 rounded-xl border border-white/10 bg-[#0d1117]/95 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-200 origin-top ${
+      {/* pt-2 köprü — buton ile kutu arasındaki boşluğu hover alanıyla kapatır */}
+      <div className={`absolute top-full left-0 pt-2 transition-all duration-200 origin-top ${
         open ? "opacity-100 scale-y-100 pointer-events-auto" : "opacity-0 scale-y-95 pointer-events-none"
       }`}>
-        {items.length === 0 ? (
-          <div className="px-4 py-6 text-center text-xs text-zinc-600 tracking-widest uppercase">Yakında...</div>
-        ) : (
-          <div className="py-1.5">
-            {items.map((item, i) => (
-              <div
-                key={i}
-                className="px-4 py-3 hover:bg-white/[0.04] transition-colors cursor-default border-b border-white/[0.04] last:border-0"
-              >
-                <p className="text-sm font-medium text-zinc-200 leading-snug">{item.title}</p>
-                {item.author && (
-                  <p className="text-[11px] text-zinc-500 mt-0.5">{item.author}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="w-72 rounded-xl border border-white/10 bg-[#0d1117]/95 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden">
+          {items.length === 0 ? (
+            <div className="px-4 py-6 text-center text-xs text-zinc-600 tracking-widest uppercase">Yakında...</div>
+          ) : (
+            <div className="py-1.5">
+              {items.map((item, i) => (
+                <div
+                  key={i}
+                  className="px-4 py-3 hover:bg-white/[0.04] transition-colors cursor-text border-b border-white/[0.04] last:border-0"
+                >
+                  <p className="text-sm font-medium text-zinc-200 leading-snug select-text">{item.title}</p>
+                  {item.author && (
+                    <p className="text-[11px] text-zinc-500 mt-0.5 select-text">{item.author}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
