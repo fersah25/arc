@@ -30,7 +30,7 @@ const NAME_REGISTRY_ABI = [
 ] as const;
 
 const NFT_CONTRACT_ADDRESS =
-  "0xEe4AB577E9D706819c96E888623ce5a5fb2E8F47" as `0x${string}`;
+  "0x9EA15D331cD4C04858013f67B394D0521EbAA6b3" as `0x${string}`;
 
 const NFT_MINT_ABI = [
   {
