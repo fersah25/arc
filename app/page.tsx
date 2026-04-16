@@ -29,74 +29,136 @@ const QUOTES = [
   "Mutlaka kârınızı realize edin. Ekranda parlayan o sayılar, bir süre sonra gözünüzde casino jetonuna dönüşür ve paranın gerçek değerini unutursunuz. Kazandığınızı realize edin; unutmayın, realize edilmemiş kâr sadece bir illüzyondur.",
 ];
 
-function QuoteModal({ onClose }: { onClose: () => void }) {
-  const [displayed, setDisplayed] = useState(QUOTES[0]);
-  const [spinning, setSpinning] = useState(true);
-  const [final, setFinal] = useState("");
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+const WHEEL_COLORS = [
+  "#4F46E5", "#7C3AED", "#6C5CE7", "#9333EA", "#5B4FE9",
+  "#6D28D9", "#8B5CF6", "#4338CA", "#7E22CE", "#a855f7",
+];
 
-  useEffect(() => {
-    const target = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-    let elapsed = 0;
-    intervalRef.current = setInterval(() => {
-      setDisplayed(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-      elapsed += 100;
-      if (elapsed >= 2000) {
-        clearInterval(intervalRef.current!);
-        setDisplayed(target);
-        setFinal(target);
-        setSpinning(false);
-      }
-    }, 100);
-    return () => clearInterval(intervalRef.current!);
-  }, []);
+function QuoteModal({ onClose }: { onClose: () => void }) {
+  const [wheelDeg, setWheelDeg] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const accumulated = useRef(0);
+
+  const N = QUOTES.length;
+  const SEG = 360 / N;
+  const CX = 150, CY = 150, R = 138;
+
+  const polar = (deg: number, radius = R) => {
+    const rad = (deg - 90) * (Math.PI / 180);
+    return { x: CX + radius * Math.cos(rad), y: CY + radius * Math.sin(rad) };
+  };
+
+  const slicePath = (i: number) => {
+    const s = i * SEG, e = s + SEG;
+    const p1 = polar(s), p2 = polar(e);
+    const large = SEG > 180 ? 1 : 0;
+    return `M ${CX},${CY} L ${p1.x.toFixed(2)},${p1.y.toFixed(2)} A ${R},${R} 0 ${large},1 ${p2.x.toFixed(2)},${p2.y.toFixed(2)} Z`;
+  };
+
+  const labelPos = (i: number) => polar(i * SEG + SEG / 2, R * 0.68);
+
+  const doSpin = () => {
+    if (spinning || result) return;
+    const idx = Math.floor(Math.random() * N);
+    // Pointer sabit üstte → çarkı döndürerek idx'i üste getir
+    const landAngle = 360 - (idx * SEG + SEG / 2);
+    const delta = 5 * 360 + landAngle - (accumulated.current % 360);
+    accumulated.current += delta;
+    setWheelDeg(accumulated.current);
+    setSpinning(true);
+    setTimeout(() => {
+      setSpinning(false);
+      setResult(QUOTES[idx]);
+    }, 4200);
+  };
 
   return (
-    <div
-      className="fixed inset-0 z-[50] flex items-center justify-center px-4"
-      onClick={onClose}
-    >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-      {/* Modal kutusu */}
+    <div className="fixed inset-0 z-[50] flex items-center justify-center px-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-md rounded-2xl border border-indigo-500/30 bg-[#0B0F1A]/90 backdrop-blur-xl px-8 py-10 flex flex-col items-center gap-6 shadow-[0_0_60px_rgba(108,92,231,0.2)]"
+        className="relative w-full max-w-md rounded-2xl border border-indigo-500/30 bg-[#0B0F1A]/95 backdrop-blur-xl px-8 py-8 flex flex-col items-center gap-5 shadow-[0_0_80px_rgba(108,92,231,0.25)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Başlık */}
         <div className="flex items-center gap-2">
-          <span className="text-lg">✨</span>
-          <span className="text-[11px] font-semibold tracking-[0.25em] text-indigo-400/80 uppercase">
-            Günün Sözü
-          </span>
+          <span className="text-base">✨</span>
+          <span className="text-[11px] font-semibold tracking-[0.25em] text-indigo-400/80 uppercase">Günün Sözü</span>
         </div>
 
-        {/* Söz alanı */}
-        <div className={`min-h-[80px] flex items-center justify-center rounded-xl border px-5 py-4 text-center transition-all duration-300 ${
-          spinning
-            ? "border-indigo-800/40 bg-indigo-950/20"
-            : "border-indigo-500/40 bg-indigo-950/30 shadow-[0_0_24px_rgba(108,92,231,0.25)]"
-        }`}>
-          <p className={`text-sm font-medium leading-relaxed transition-colors duration-300 ${
-            spinning ? "text-zinc-500" : "text-zinc-100"
-          }`}>
-            {spinning ? (
-              <span className="font-mono text-indigo-500/70">{displayed}</span>
-            ) : (
-              `"${final}"`
-            )}
-          </p>
-        </div>
-
-        {/* Kapat butonu */}
-        {!spinning && (
-          <button
-            onClick={onClose}
-            className="mt-1 rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-6 py-2.5 text-xs font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.2)]"
+        {/* Çark */}
+        <div className="relative" style={{ width: 300, height: 300 }}>
+          {/* Pointer — üstte sabit ok */}
+          <div className="absolute top-[-6px] left-1/2 z-10"
+            style={{
+              transform: "translateX(-50%)",
+              width: 0, height: 0,
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderTop: "22px solid #6C5CE7",
+              filter: "drop-shadow(0 0 6px rgba(108,92,231,0.9))",
+            }}
+          />
+          <svg
+            width="300" height="300" viewBox="0 0 300 300"
+            style={{
+              transform: `rotate(${wheelDeg}deg)`,
+              transition: spinning ? "transform 4.2s cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
+              transformOrigin: "150px 150px",
+            }}
           >
-            Kapat
+            {QUOTES.map((_, i) => (
+              <g key={i}>
+                <path
+                  d={slicePath(i)}
+                  fill={WHEEL_COLORS[i % WHEEL_COLORS.length]}
+                  stroke="#0B0F1A"
+                  strokeWidth="2"
+                />
+                <text
+                  x={labelPos(i).x}
+                  y={labelPos(i).y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="rgba(255,255,255,0.85)"
+                  fontSize="13"
+                  fontWeight="bold"
+                  transform={`rotate(${i * SEG + SEG / 2}, ${labelPos(i).x}, ${labelPos(i).y})`}
+                >
+                  {i + 1}
+                </text>
+              </g>
+            ))}
+            {/* Merkez daire */}
+            <circle cx={CX} cy={CY} r="22" fill="#0B0F1A" stroke="#6C5CE7" strokeWidth="2.5" />
+            <circle cx={CX} cy={CY} r="8" fill="#6C5CE7" />
+          </svg>
+        </div>
+
+        {/* Çevir butonu */}
+        {!result && (
+          <button
+            onClick={doSpin}
+            disabled={spinning}
+            className="rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-8 py-3 text-sm font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.2)] disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {spinning ? "Dönüyor..." : "Çevir !"}
           </button>
+        )}
+
+        {/* Sonuç */}
+        {result && (
+          <>
+            <div className="w-full rounded-xl border border-indigo-500/40 bg-indigo-950/30 shadow-[0_0_28px_rgba(108,92,231,0.28)] px-5 py-4 text-center">
+              <p className="text-sm font-medium leading-relaxed text-zinc-100">&ldquo;{result}&rdquo;</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-6 py-2.5 text-xs font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.2)]"
+            >
+              Kapat
+            </button>
+          </>
         )}
       </div>
     </div>
@@ -613,17 +675,17 @@ export default function Home() {
 
           {/* ── Header ─────────────────────────────────────────────────────── */}
           <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
-            <div className="max-w-2xl mx-auto grid grid-cols-3 items-center">
+            <div className="w-full flex items-center gap-4">
               {/* Sol: Logo */}
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 shrink-0">
                 <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
                 <span className="text-sm font-semibold tracking-tight text-white">
                   Arc Quest Dashboard
                 </span>
               </div>
 
-              {/* Orta: Günün Sözü butonu */}
-              <div className="flex justify-center">
+              {/* Orta: Günün Sözü butonu — tam merkeze */}
+              <div className="flex-1 flex justify-center">
                 <button
                   onClick={() => setQuoteOpen(true)}
                   className="flex items-center gap-2 rounded-xl border border-indigo-700/50 bg-indigo-950/50 px-6 py-3 text-base font-semibold text-indigo-300 tracking-wide transition-all hover:bg-indigo-900/50 hover:border-indigo-500/60 hover:text-indigo-200 hover:shadow-[0_0_18px_rgba(108,92,231,0.25)] backdrop-blur-md"
@@ -633,8 +695,8 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Sağ: Cüzdan */}
-              <div className="flex justify-end">
+              {/* Sağ: Cüzdan — tam sağ köşe */}
+              <div className="shrink-0">
                 <ConnectButton showBalance={false} />
               </div>
             </div>
