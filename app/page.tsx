@@ -40,14 +40,14 @@ function QuoteModal({ onClose }: { onClose: () => void }) {
     let elapsed = 0;
     intervalRef.current = setInterval(() => {
       setDisplayed(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-      elapsed += 80;
+      elapsed += 100;
       if (elapsed >= 2000) {
         clearInterval(intervalRef.current!);
         setDisplayed(target);
         setFinal(target);
         setSpinning(false);
       }
-    }, 80);
+    }, 100);
     return () => clearInterval(intervalRef.current!);
   }, []);
 
@@ -613,26 +613,28 @@ export default function Home() {
 
           {/* ── Header ─────────────────────────────────────────────────────── */}
           <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
-            <div className="max-w-2xl mx-auto flex items-center gap-4">
-              {/* Logo */}
-              <div className="flex items-center gap-2.5 shrink-0">
+            <div className="max-w-2xl mx-auto grid grid-cols-3 items-center">
+              {/* Sol: Logo */}
+              <div className="flex items-center gap-2.5">
                 <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
                 <span className="text-sm font-semibold tracking-tight text-white">
                   Arc Quest Dashboard
                 </span>
               </div>
 
-              {/* Günün Sözü butonu */}
-              <button
-                onClick={() => setQuoteOpen(true)}
-                className="flex items-center gap-2 rounded-xl border border-indigo-700/50 bg-indigo-950/50 px-6 py-3 text-base font-semibold text-indigo-300 tracking-wide transition-all hover:bg-indigo-900/50 hover:border-indigo-500/60 hover:text-indigo-200 hover:shadow-[0_0_18px_rgba(108,92,231,0.25)] backdrop-blur-md"
-              >
-                <span>✨</span>
-                <span>Günün Sözü</span>
-              </button>
+              {/* Orta: Günün Sözü butonu */}
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setQuoteOpen(true)}
+                  className="flex items-center gap-2 rounded-xl border border-indigo-700/50 bg-indigo-950/50 px-6 py-3 text-base font-semibold text-indigo-300 tracking-wide transition-all hover:bg-indigo-900/50 hover:border-indigo-500/60 hover:text-indigo-200 hover:shadow-[0_0_18px_rgba(108,92,231,0.25)] backdrop-blur-md"
+                >
+                  <span>✨</span>
+                  <span>Günün Sözü</span>
+                </button>
+              </div>
 
-              {/* Cüzdan — sağa yap */}
-              <div className="ml-auto shrink-0">
+              {/* Sağ: Cüzdan */}
+              <div className="flex justify-end">
                 <ConnectButton showBalance={false} />
               </div>
             </div>
