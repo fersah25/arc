@@ -174,7 +174,14 @@ const KITAPLAR = [
   { title: "Blokzincir Kripto Paralar Bitcoin: Satoshi Dünyayı Değiştiriyor", author: "Erkin Şahinöz & Vedat Güven" },
 ];
 
-const FILMLER: { title: string; author?: string }[] = [];
+const FILMLER: { title: string; author?: string }[] = [
+  { title: "The Big Short" },
+  { title: "Centra Tech" },
+  { title: "Wall Street" },
+  { title: "Dumb Money" },
+  { title: "Inside Job" },
+  { title: "Crypto Boy" },
+];
 
 function NavDropdown({
   label,
