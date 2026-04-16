@@ -15,6 +15,94 @@ import { ARC_QUEST_ABI, ARC_QUEST_BYTECODE } from "./lib/arcQuest";
 import { QuestProvider, useQuestStats } from "./lib/questContext";
 import { HologramBackground } from "../components/HologramBackground";
 
+// ─── Günün Sözü ──────────────────────────────────────────────────────────────
+const QUOTES = [
+  "Fersah fersah yolun başındayız, gelecek burada.",
+  "Blockchain sadece teknoloji değil, bir özgürlük manifestosudur.",
+  "Arc ağında her işlem, geleceğe atılmış bir imzadır.",
+  "Boğa piyasası sabredenlerin, ayı piyasası öğrenenlerin dostudur.",
+  "Kodun içinde adalet, zincirin içinde güven vardır.",
+  "En uzun yollar, ilk blokla başlar.",
+  "Merkeziyetsizlik bir tercih değil, zorunluluktur.",
+  "Hata yapmaktan korkma, rollback yapamayacağın tek şey zamandır.",
+  "Kendi cüzdanının efendisi ol, anahtarların senin özgürlüğündür.",
+  "Fersah'ta sınır yok, sadece keşfedilmeyi bekleyen bloklar var.",
+];
+
+function QuoteModal({ onClose }: { onClose: () => void }) {
+  const [displayed, setDisplayed] = useState(QUOTES[0]);
+  const [spinning, setSpinning] = useState(true);
+  const [final, setFinal] = useState("");
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    const target = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    let elapsed = 0;
+    intervalRef.current = setInterval(() => {
+      setDisplayed(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+      elapsed += 80;
+      if (elapsed >= 2000) {
+        clearInterval(intervalRef.current!);
+        setDisplayed(target);
+        setFinal(target);
+        setSpinning(false);
+      }
+    }, 80);
+    return () => clearInterval(intervalRef.current!);
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[50] flex items-center justify-center px-4"
+      onClick={onClose}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      {/* Modal kutusu */}
+      <div
+        className="relative w-full max-w-md rounded-2xl border border-indigo-500/30 bg-[#0B0F1A]/90 backdrop-blur-xl px-8 py-10 flex flex-col items-center gap-6 shadow-[0_0_60px_rgba(108,92,231,0.2)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Başlık */}
+        <div className="flex items-center gap-2">
+          <span className="text-lg">✨</span>
+          <span className="text-[11px] font-semibold tracking-[0.25em] text-indigo-400/80 uppercase">
+            Günün Sözü
+          </span>
+        </div>
+
+        {/* Söz alanı */}
+        <div className={`min-h-[80px] flex items-center justify-center rounded-xl border px-5 py-4 text-center transition-all duration-300 ${
+          spinning
+            ? "border-indigo-800/40 bg-indigo-950/20"
+            : "border-indigo-500/40 bg-indigo-950/30 shadow-[0_0_24px_rgba(108,92,231,0.25)]"
+        }`}>
+          <p className={`text-sm font-medium leading-relaxed transition-colors duration-300 ${
+            spinning ? "text-zinc-500" : "text-zinc-100"
+          }`}>
+            {spinning ? (
+              <span className="font-mono text-indigo-500/70">{displayed}</span>
+            ) : (
+              `"${final}"`
+            )}
+          </p>
+        </div>
+
+        {/* Kapat butonu */}
+        {!spinning && (
+          <button
+            onClick={onClose}
+            className="mt-1 rounded-xl border border-indigo-700/40 bg-indigo-950/50 px-6 py-2.5 text-xs font-semibold tracking-widest text-indigo-300 uppercase transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_16px_rgba(99,102,241,0.2)]"
+          >
+            Kapat
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Kontrat sabitleri ────────────────────────────────────────────────────────
 const NAME_REGISTRY_ADDRESS =
   "0x0000000000000000000000000000000000000000" as `0x${string}`;
@@ -440,6 +528,7 @@ const TASKS: { id: TaskId; label: string }[] = [
 // ─── Ana sayfa ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const [openTask, setOpenTask] = useState<TaskId | null>(null);
+  const [quoteOpen, setQuoteOpen] = useState(false);
   const { address, isConnected } = useAccount();
   const watermarkRef = useRef<HTMLDivElement>(null);
 
@@ -516,19 +605,36 @@ export default function Home() {
           </span>
         </div>
 
+        {/* Günün Sözü Modal */}
+        {quoteOpen && <QuoteModal onClose={() => setQuoteOpen(false)} />}
+
         {/* 4. ASIL İÇERİK: Saydam ve en üstte (z-10) */}
         <div className="relative z-10 bg-transparent text-white flex flex-col min-h-screen">
 
           {/* ── Header ─────────────────────────────────────────────────────── */}
           <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B0F1A]/80 backdrop-blur-md px-6 py-4">
-            <div className="max-w-2xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+            <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+              {/* Logo */}
+              <div className="flex items-center gap-2.5 shrink-0">
                 <div className="w-2 h-2 rounded-full bg-[#6C5CE7] shadow-[0_0_8px_rgba(108,92,231,0.9)]" />
                 <span className="text-sm font-semibold tracking-tight text-white">
                   Arc Quest Dashboard
                 </span>
               </div>
-              <ConnectButton showBalance={false} />
+
+              {/* Günün Sözü butonu */}
+              <button
+                onClick={() => setQuoteOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-indigo-800/40 bg-indigo-950/40 px-3.5 py-1.5 text-xs font-medium text-indigo-300 tracking-wide transition-all hover:bg-indigo-900/40 hover:border-indigo-600/50 hover:text-indigo-200 hover:shadow-[0_0_12px_rgba(108,92,231,0.2)] backdrop-blur-md"
+              >
+                <span>✨</span>
+                <span>Günün Sözü</span>
+              </button>
+
+              {/* Cüzdan */}
+              <div className="shrink-0">
+                <ConnectButton showBalance={false} />
+              </div>
             </div>
           </header>
 
